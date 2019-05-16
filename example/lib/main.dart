@@ -58,8 +58,7 @@ class _MyAppState extends State<MyApp> {
     return RaisedButton(
       child: Text('跳转去聊天界面'),
       onPressed: () {
-          // FlutterLcIm.register("uAsHYp2qXIhJ6SYB88ehVXCr-gzGzoHsz", "5HdoMlbpmaKDfs7H4blpdLVf");
-          FlutterLcIm.pushToChatView("123","1", "");
+          FlutterLcIm.pushToChatView("1","2", "http://localhost:8080/yanketang/api/v2/im/users");
           print('object');
       },
     );

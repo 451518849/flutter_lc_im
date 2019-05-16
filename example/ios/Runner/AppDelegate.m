@@ -11,7 +11,7 @@
   // Override point for customization after application launch.
     [GeneratedPluginRegistrant registerWithRegistry:self];
 
-    [LCChatKit setAppId:@"xxxxx" appKey:@"xxxxxx"];
+    [LCChatKit setAppId:@"xxx" appKey:@"xxxx"];
     // 启用未读消息
     
     [AVIMClient setUnreadNotificationEnabled:true];

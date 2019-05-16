@@ -22,10 +22,6 @@
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
     result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
   }
-  else if ([@"register" isEqualToString:call.method]){
-      [FlutterLcImPlugin setConfigurationWithAppId:call.arguments[@"appId"] AppKey:call.arguments[@"appKey"]];
-      result(nil);
-  }
   else if ([@"pushToChatView" isEqualToString:call.method]) {
       
       [FlutterLcImPlugin loginWithUserId:call.arguments[@"userId"] peerId:call.arguments[@"peerId"] appUrl:call.arguments[@"appUrl"]];
@@ -36,25 +32,10 @@
   }
 }
 
-+ (void)setConfigurationWithAppId:(NSString *)appId AppKey:(NSString *)appKey {
-    
-    [FlutterLcImPlugin registerForRemoteNotification];
-    // 如果APP是在国外使用，开启北美节点
-    // 必须在 APPID 初始化之前调用，否则走的是中国节点。
-    // [AVOSCloud setServiceRegion:AVServiceRegionUS];
-//    [LCChatKit setAppId:appId appKey:appKey];
-//    // 启用未读消息
-//
-//    [AVIMClient setUnreadNotificationEnabled:true];
-//    [AVIMClient setTimeoutIntervalInSeconds:20];
-////    //添加输入框底部插件，如需更换图标标题，可子类化，然后调用 `+registerSubclass`
-//    [LCCKInputViewPluginTakePhoto registerSubclass];
-//    [LCCKInputViewPluginPickImage registerSubclass];
-//    [LCCKInputViewPluginLocation registerSubclass];
-}
-
 + (void)loginWithUserId:(NSString *)userId peerId:(NSString *)peerId appUrl:(NSString *)url{
     
+    [FlutterLcImPlugin registerForRemoteNotification];
+
     [LCCKUtil showProgressText:@"open client ..." duration:10.0f];
     [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:userId appUrl:url success:^{
         [LCCKUtil hideProgress];

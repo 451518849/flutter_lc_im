@@ -97,19 +97,29 @@
                 }
                 
             } else {
-                [LCChatKitHelper requestUserInfoWithUrl:url clientId:clientId success:^(id returnValue) {
-                    
-                    LCCKUser *user = [[LCCKUser alloc] initWithUserId:clientId name:returnValue[@"name"] avatarURL:returnValue[@"avatar_url"]];
-                    
+//                LCCKUser *user = [[LCCKUser alloc] initWithUserId:clientId name:@"jason" avatarURL:@""];
+//                [users addObject:user];
+//
+//                if (userIds.count == idx+1) {
+//                    NSLog(@"completionHandler====%@",users);
+//                    !completionHandler ?: completionHandler([users copy], nil);
+//                }
+                NSString *fullUrl = [NSString stringWithFormat:@"%@/%@",url,clientId];
+
+                [LCChatKitHelper requestUserInfoWithUrl:fullUrl clientId:clientId success:^(id returnValue) {
+
+ 
+                    //user_id 如果为int类型需要转字符串
+                    LCCKUser *user = [[LCCKUser alloc] initWithUserId:[NSString stringWithFormat:@"%@",returnValue[@"user_id"]] name:returnValue[@"username"] avatarURL:returnValue[@"avatar_url"]];
+
                     [users addObject:user];
                     
                     if (userIds.count == idx+1) {
                         !completionHandler ?: completionHandler([users copy], nil);
                     }
-                    
-                    
+
                 } error:^(id error) {
-                    
+
                 }];
                 
             }
@@ -131,7 +141,8 @@
         NSHTTPURLResponse *resp = (NSHTTPURLResponse *)response;
         if (resp.statusCode == 200) {
             NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
-            success(result);
+            NSLog(@"user info result:%@",result);
+            success(result[@"result"]);
         } else {
             NSLog(@"user info request error: %@",error);
             failure(error);

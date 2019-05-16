@@ -11,17 +11,6 @@ class FlutterLcIm {
     return version;
   }
 
-  static Future<dynamic>register(String appId,String appKey) async {
-    var result = await _channel.invokeMethod(
-      'register',
-      {
-        'appId': appId,
-        'appKey':appKey
-      }
-    );
-    return result;
-  }
-
   static Future<dynamic>pushToChatView(String userId,String peerId,String appUrl) async {
     var result = await _channel.invokeMethod(
       'pushToChatView',
