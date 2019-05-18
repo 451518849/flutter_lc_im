@@ -1,8 +1,44 @@
 # flutter_lc_im
 
-简单封装LeanCloud的IM功能，目前处于研发阶段，只封装了iOS端.
+![](demo.jpeg)
 
-## Getting Started
+
+简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。
+
+
+Flutter中的实现如下：
+		 
+        FlutterLcIm.register("appId", "appKey","当前用户的userId");
+        Map user = {'name':'jason1','user_id':"1",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
+        Map peer = {'name':'jason2','user_id':"3",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
+        FlutterLcIm.pushToConversationView(user,peer);
+        FlutterLcIm.getConversationList()
+        
+FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，第二个参数peer是聊天对象.
+
+## Getting Andriod Started
+#### 第一步 AndroidManifest.xml加入以下配置
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.RECORD_VIDEO" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    
+    <application
+       android:theme="@style/LCIMKitTheme" >  //加入这个
+		<activity
+		xxxxxxxxx
+		</activity>
+	</application>
+#### 第二步 Flutter项目中加入以下代码：
+        FlutterLcIm.register("appId", "Appkey");
+        FlutterLcIm.pushToConversationView(user,peer);
+
+## Getting iOS Started
 
 #### 第一步 info.plist加入以下配置
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -27,24 +63,6 @@
 
 	#import <ChatKit/LCChatKit.h>
 	#import <UserNotifications/UserNotifications.h>
-
-	- (BOOL)application:(UIApplication *)application
-	    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-	  // Override point for customization after application launch.
-	    [GeneratedPluginRegistrant registerWithRegistry:self];
-	
-	    [LCChatKit setAppId:@"xxxxx" appKey:@"xxxxxx"];
-	    // 启用未读消息
-	    
-	    [AVIMClient setUnreadNotificationEnabled:true];
-	    [AVIMClient setTimeoutIntervalInSeconds:20];
-	    //    //添加输入框底部插件，如需更换图标标题，可子类化，然后调用 `+registerSubclass`
-	    [LCCKInputViewPluginTakePhoto registerSubclass];
-	    [LCCKInputViewPluginPickImage registerSubclass];
-	    [LCCKInputViewPluginLocation registerSubclass];
-	    
-	  return [super application:application didFinishLaunchingWithOptions:launchOptions];
-	}
 	
 	- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
 	    [AVOSCloud handleRemoteNotificationsWithDeviceToken:deviceToken];
@@ -108,22 +126,5 @@
 	}
 
 #### 第三步 Flutter项目中加入以下代码：
-
-	FlutterLcIm.pushToChatView("userId","peerId", "baseInfoUrl");
-
-FlutterLcIm.pushToChatView中第一个参数userId指的是当前用户的ID，第二个参数peerId是聊天对象的ID，第三个参数baseInfoUrl指的是获取用户信息的接口，格式如下：
-http://www.example.com/im/users,接口内参数格式如下：
-
-	baseInfoUrl = http://www.example.com/im/users
-	user info url = http://www.example.com/im/users/1
-	user info url返回的数据如下:
-	{
-	    "success": true,
-	    "errors": "",
-	    "result": {
-	        "username": "vector",
-	        "avatar_url": "http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100",
-	        "user_id": 1
-	    }
-	}
-
+        FlutterLcIm.register("appId", "Appkey");
+        FlutterLcIm.pushToConversationView(user,peer);

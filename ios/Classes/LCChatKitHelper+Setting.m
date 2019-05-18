@@ -30,6 +30,17 @@
     [self lcck_memberInfoChanged];
 }
 
+- (void)lcck_settingWithUsers:(NSArray<LCCKUser *> *)users {
+    //设置用户体系
+    [self lcck_setFetchProfilesWithUsers:users];
+    
+    //设置聊天
+    [self lcck_setupConversation];
+    // 其他各种设置
+    [self lcck_setupOther];
+    [self lcck_memberInfoChanged];
+}
+
 - (void)lcck_setupConversation {
     //设置打开会话的操作
     [self lcck_setupOpenConversation];
@@ -63,6 +74,31 @@
  *  设置用户体系，里面要实现如何根据 userId 获取到一个 User 对象的逻辑。
  *  ChatKit 会在需要用到 User信息时调用设置的这个逻辑。
  */
+
+- (void)lcck_setFetchProfilesWithUsers:(NSArray<LCCKUser *> *)users {
+    [[LCChatKit sharedInstance] setFetchProfilesBlock:^(NSArray<NSString *> *userIds,
+                                                        LCCKFetchProfilesCompletionHandler completionHandler) {
+        if (userIds.count == 0) {
+            NSInteger code = 0;
+            NSString *errorReasonText = @"User ids is nil";
+            NSDictionary *errorInfo = @{
+                                        @"code":@(code),
+                                        NSLocalizedDescriptionKey : errorReasonText,
+                                        };
+            NSError *error = [NSError errorWithDomain:NSStringFromClass([self class])
+                                                 code:code
+                                             userInfo:errorInfo];
+            
+            !completionHandler ?: completionHandler(nil, error);
+            return;
+        }
+        
+        !completionHandler ?: completionHandler([users copy], nil);
+        return;
+    }];
+
+}
+
 - (void)lcck_setFetchProfilesWithAppUrl:(NSString *)url {
     [[LCChatKit sharedInstance] setFetchProfilesBlock:^(NSArray<NSString *> *userIds,
                                                         LCCKFetchProfilesCompletionHandler completionHandler) {
@@ -97,13 +133,7 @@
                 }
                 
             } else {
-//                LCCKUser *user = [[LCCKUser alloc] initWithUserId:clientId name:@"jason" avatarURL:@""];
-//                [users addObject:user];
-//
-//                if (userIds.count == idx+1) {
-//                    NSLog(@"completionHandler====%@",users);
-//                    !completionHandler ?: completionHandler([users copy], nil);
-//                }
+
                 NSString *fullUrl = [NSString stringWithFormat:@"%@/%@",url,clientId];
 
                 [LCChatKitHelper requestUserInfoWithUrl:fullUrl clientId:clientId success:^(id returnValue) {

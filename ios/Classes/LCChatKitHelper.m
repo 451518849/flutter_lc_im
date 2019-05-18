@@ -51,6 +51,44 @@
 }
 
 + (void)invokeThisMethodAfterLoginSuccessWithClientId:(NSString *)clientId
+                                              success:(LCCKVoidBlock)success
+                                               failed:(LCCKErrorBlock)failed {
+    [[LCChatKit sharedInstance] openWithClientId:clientId
+                                        callback:^(BOOL succeeded, NSError *error) {
+                                            if (succeeded) {
+                                               // [self saveLocalClientInfo:clientId];
+                                                !success ?: success();
+                                            } else {
+                                                [LCCKUtil showNotificationWithTitle:@"登陆失败"
+                                                                           subtitle:nil
+                                                                               type:LCCKMessageNotificationTypeError];
+                                                !failed ?: failed(error);
+                                            }
+                                        }];
+}
+//直接传入用户信息
++ (void)invokeThisMethodAfterLoginSuccessWithClientId:(NSString *)clientId
+                                               users:(NSArray<LCCKUser *> *)users
+                                              success:(LCCKVoidBlock)success
+                                               failed:(LCCKErrorBlock)failed {
+    [[self sharedInstance] lcck_settingWithUsers:users];
+    [[LCChatKit sharedInstance] openWithClientId:clientId
+                                        callback:^(BOOL succeeded, NSError *error) {
+                                            if (succeeded) {
+                                                [self saveLocalClientInfo:clientId];
+                                                !success ?: success();
+                                            } else {
+                                                [LCCKUtil showNotificationWithTitle:@"登陆失败"
+                                                                           subtitle:nil
+                                                                               type:LCCKMessageNotificationTypeError];
+                                                !failed ?: failed(error);
+                                            }
+                                        }];
+    //
+}
+
+//根据id获取用户信息
++ (void)invokeThisMethodAfterLoginSuccessWithClientId:(NSString *)clientId
                                                appUrl:(NSString *)url
                                               success:(LCCKVoidBlock)success
                                                failed:(LCCKErrorBlock)failed {

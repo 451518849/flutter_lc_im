@@ -1,10 +1,21 @@
-group 'com.example.flutter_lc_im'
+group 'com.xiaofa.flutter_lc_im'
 version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
+        def userHome = System.getenv("HOME")
         google()
         jcenter()
+
+        maven {
+            url "$userHome/.m2/repository/"
+        }
+        maven {
+            url "http://mvn.leancloud.cn/nexus/content/repositories/releases"
+        }
+        maven {
+            url "http://repo.maven.apache.org/maven2"
+        }
     }
 
     dependencies {
@@ -14,8 +25,19 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
+        def userHome = System.getenv("HOME")
         google()
         jcenter()
+        maven {
+            url "$userHome/.m2/repository/"
+        }
+
+        maven {
+            url "http://mvn.leancloud.cn/nexus/content/repositories/releases"
+        }
+        maven {
+            url "http://repo.maven.apache.org/maven2"
+        }
     }
 }
 
@@ -31,4 +53,9 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+
+}
+
+dependencies {
+    compile project(':leancloudchatkit')
 }

@@ -11,14 +11,32 @@ class FlutterLcIm {
     return version;
   }
 
-  static Future<dynamic>pushToChatView(String userId,String peerId,String appUrl) async {
+  static Future<dynamic>register(String appId,String appKey,String userId) async {
     var result = await _channel.invokeMethod(
-      'pushToChatView',
+      'register',
       {
-        'userId': userId,
-        'peerId': peerId,
-        'appUrl': appUrl
+        'app_id': appId,
+        'app_key': appKey,
+        'user_id':userId,
       }
+    );
+    return result;
+  }
+
+  static Future<dynamic>pushToConversationView(Map user,Map peer) async {
+    var result = await _channel.invokeMethod(
+      'pushToConversationView',
+      {
+        'user': user,
+        'peer': peer,
+      }
+    );
+    return result;
+  }
+
+  static Future<dynamic>getConversationList() async {
+    var result = await _channel.invokeMethod(
+      'getConversationList'
     );
     return result;
   }

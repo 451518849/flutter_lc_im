@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
  *  初始化需要的设置
  */
 - (void)lcck_settingWithAppUrl:(NSString *)url;
+- (void)lcck_settingWithUsers:(NSArray<LCCKUser *> *)users;
+
 + (void)lcck_pushToViewController:(UIViewController *)viewController;
 + (void)lcck_tryPresentViewControllerViewController:(UIViewController *)viewController;
 + (void)lcck_clearLocalClientInfo;

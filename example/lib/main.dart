@@ -58,7 +58,11 @@ class _MyAppState extends State<MyApp> {
     return RaisedButton(
       child: Text('跳转去聊天界面'),
       onPressed: () {
-          FlutterLcIm.pushToChatView("1","2", "http://localhost:8080/yanketang/api/v2/im/users");
+        FlutterLcIm.register("uAsHYp2qXIhJ6SYB88ehVXCr-gzGzoHsz", "5HdoMlbpmaKDfs7H4blpdLVf","1");
+        Map user = {'name':'jason1','user_id':"1",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
+        Map peer = {'name':'jason2','user_id':"3",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
+          FlutterLcIm.pushToConversationView(user,peer);
+         // FlutterLcIm.getConversationList();
           print('object');
       },
     );

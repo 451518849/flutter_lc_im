@@ -11,6 +11,7 @@
 #else
 #import "LCChatKit.h"
 #endif
+#import "LCCKUser.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,11 +24,22 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  用户登录时调用
  */
+
++ (void)invokeThisMethodAfterLoginSuccessWithClientId:(NSString *)clientId
+                                              success:(LCCKVoidBlock)success
+                                               failed:(LCCKErrorBlock)failed;
+
 + (void)invokeThisMethodAfterLoginSuccessWithClientId:(NSString *)clientId
                                                appUrl:(NSString *)url
                                               success:(LCCKVoidBlock)success
                                                failed:(LCCKErrorBlock)failed;
 
+
+//直接传入用户信息
++ (void)invokeThisMethodAfterLoginSuccessWithClientId:(NSString *)clientId
+                                                users:(NSArray<LCCKUser *> *)users
+                                              success:(LCCKVoidBlock)success
+                                               failed:(LCCKErrorBlock)failed;
 /*!
  *  入口胶水函数：登出入口函数
  *

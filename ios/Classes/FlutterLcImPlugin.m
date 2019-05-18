@@ -3,6 +3,9 @@
 #import "LCChatKitHelper+Setting.h"
 #import "FlutterLcImPlugin.h"
 #import <UserNotifications/UserNotifications.h>
+#import "LCCKUser.h"
+
+static BOOL isRegister = false;
 
 @interface FlutterLcImPlugin()<UNUserNotificationCenterDelegate>
 
@@ -21,31 +24,105 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
     result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  }
-  else if ([@"pushToChatView" isEqualToString:call.method]) {
+  } else if ([@"register" isEqualToString:call.method]){
       
-      [FlutterLcImPlugin loginWithUserId:call.arguments[@"userId"] peerId:call.arguments[@"peerId"] appUrl:call.arguments[@"appUrl"]];
+      if (!isRegister) {
+          NSString *appId    = call.arguments[@"app_id"];
+          NSString *appKey   = call.arguments[@"app_key"];
+          NSString *clientId = call.arguments[@"user_id"];
+
+          [FlutterLcImPlugin registerConversationWithAppId:appId
+                                                    appKey:appKey
+                                                  clientId:clientId
+                                                    result:result];
+          isRegister = true;
+      }
+
       result(nil);
+  }
+  else if ([@"pushToConversationView" isEqualToString:call.method]) {
+      [FlutterLcImPlugin loginWithUser:call.arguments[@"user"]
+                                  peer:call.arguments[@"peer"]];
+      result(nil);
+  }
+  else if ([@"getConversationList" isEqualToString:call.method]) {
+      [FlutterLcImPlugin getConversationList:result];
   }
   else {
     result(FlutterMethodNotImplemented);
   }
 }
 
-+ (void)loginWithUserId:(NSString *)userId peerId:(NSString *)peerId appUrl:(NSString *)url{
++ (void)registerConversationWithAppId:(NSString *)appId
+                               appKey:(NSString *)appKey
+                             clientId:(NSString *)clientId
+                               result:(FlutterResult)result{
     
+    NSLog(@"register conversation");
     [FlutterLcImPlugin registerForRemoteNotification];
 
-    [LCCKUtil showProgressText:@"open client ..." duration:10.0f];
-    [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:userId appUrl:url success:^{
+    [LCChatKit setAppId:appId appKey:appKey];
+    // 启用未读消息
+    [AVIMClient setUnreadNotificationEnabled:true];
+    [AVIMClient setTimeoutIntervalInSeconds:20];
+    //    //添加输入框底部插件，如需更换图标标题，可子类化，然后调用 `+registerSubclass`
+    [LCCKInputViewPluginTakePhoto registerSubclass];
+    [LCCKInputViewPluginPickImage registerSubclass];
+    [LCCKInputViewPluginLocation registerSubclass];
+    
+    [LCCKUtil showProgressText:@"连接中..." duration:10.0f];
+    [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:clientId success:^{
+         NSLog(@"login success@");
         [LCCKUtil hideProgress];
-        [LCChatKitHelper openConversationViewControllerWithPeerId:peerId];
+        result(nil);
     } failed:^(NSError *error) {
         [LCCKUtil hideProgress];
-        NSLog(@"%@",error);
+        NSLog(@"login error");
+        [LCCKUtil hideProgress];
+        result(@"login error");
     }];
 }
 
++(void)getConversationList:(FlutterResult)result{
+    
+    NSMutableArray *userIds = [NSMutableArray array];
+    [[LCCKConversationListService sharedInstance] findRecentConversationsWithBlock:^(NSArray *conversations, NSInteger totalUnreadCount, NSError *error) {
+        
+        [conversations enumerateObjectsUsingBlock:^(AVIMConversation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [userIds addObject:obj.clientId];
+        }];
+        result(userIds);
+    }];
+    
+}
+
++ (void)loginWithUser:(NSDictionary *)userDic peer:(NSDictionary *)peerDic{
+    
+    LCCKUser *user = [[LCCKUser alloc] initWithUserId:userDic[@"user_id"] name:userDic[@"name"] avatarURL:userDic[@"avatar_url"]];
+    LCCKUser *peer = [[LCCKUser alloc] initWithUserId:peerDic[@"user_id"] name:peerDic[@"name"] avatarURL:peerDic[@"avatar_url"]];
+
+    NSMutableArray *users = [NSMutableArray arrayWithCapacity:2];
+    [users addObject:user];
+    [users addObject:peer];
+    
+    [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:users];
+    [LCChatKitHelper openConversationViewControllerWithPeerId:peer.userId];
+    
+}
+//+ (void)loginWithUserId:(NSString *)userId peerId:(NSString *)peerId appUrl:(NSString *)url{
+//
+//    [FlutterLcImPlugin registerForRemoteNotification];
+//
+//    [LCCKUtil showProgressText:@"open client ..." duration:10.0f];
+//    [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:userId appUrl:url success:^{
+//        [LCCKUtil hideProgress];
+//        [LCChatKitHelper openConversationViewControllerWithPeerId:peerId];
+//    } failed:^(NSError *error) {
+//        [LCCKUtil hideProgress];
+//        NSLog(@"%@",error);
+//    }];
+//}
+//
 
 
 /**
