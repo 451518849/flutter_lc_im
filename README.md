@@ -3,8 +3,7 @@
 ![](demo.jpeg)
 
 
-简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。
-
+简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。[flutter_lc_im 0.0.2](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
 
 Flutter中的实现如下：
 		 
@@ -16,6 +15,13 @@ Flutter中的实现如下：
         
 FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，第二个参数peer是聊天对象.
 
+#### 安装方式
+Add this to your package's pubspec.yaml file:
+
+	dependencies:
+		flutter_lc_im: ^0.0.2
+		  
+	flutter packages get
 ## Getting Andriod Started
 #### 第一步 AndroidManifest.xml加入以下配置
     <uses-permission android:name="android.permission.INTERNET" />
