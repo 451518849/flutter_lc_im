@@ -3,7 +3,7 @@
 ![](demo.jpeg)
 
 
-简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。[flutter_lc_im 0.0.2](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
+简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。[flutter_lc_im 0.0.6](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
 
 Flutter中的实现如下：
 		 

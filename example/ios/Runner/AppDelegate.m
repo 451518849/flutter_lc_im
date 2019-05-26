@@ -1,6 +1,6 @@
 #include "AppDelegate.h"
 #include "GeneratedPluginRegistrant.h"
-#import <ChatKit/LCChatKit.h>
+#import <FakeChatKit/LCChatKit.h>
 #import <UserNotifications/UserNotifications.h>
 
 //

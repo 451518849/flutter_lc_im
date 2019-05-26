@@ -1,41 +1,19 @@
 buildscript {
     repositories {
-        def userHome = System.getenv("HOME")
         google()
         jcenter()
-
-        maven {
-            url "$userHome/.m2/repository/"
-        }
-        maven {
-            url "http://mvn.leancloud.cn/nexus/content/repositories/releases"
-        }
-        maven {
-            url "http://repo.maven.apache.org/maven2"
-        }
-
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.1'
     }
 }
 
 allprojects {
     repositories {
-        def userHome = System.getenv("HOME")
         google()
         jcenter()
-        maven {
-            url "$userHome/.m2/repository/"
-        }
 
-        maven {
-            url "http://mvn.leancloud.cn/nexus/content/repositories/releases"
-        }
-        maven {
-            url "http://repo.maven.apache.org/maven2"
-        }
     }
 }
 

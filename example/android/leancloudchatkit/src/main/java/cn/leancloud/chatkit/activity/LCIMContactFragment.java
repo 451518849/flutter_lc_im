@@ -2,16 +2,17 @@ package cn.leancloud.chatkit.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.alibaba.fastjson.JSON;
 
@@ -24,8 +25,8 @@ import cn.leancloud.chatkit.LCChatKitUser;
 import cn.leancloud.chatkit.R;
 import cn.leancloud.chatkit.adapter.LCIMCommonListAdapter;
 import cn.leancloud.chatkit.adapter.LCIMMembersAdapter;
-import cn.leancloud.chatkit.event.LCIMMemberSelectedChangeEvent;
 import cn.leancloud.chatkit.event.LCIMMemberLetterEvent;
+import cn.leancloud.chatkit.event.LCIMMemberSelectedChangeEvent;
 import cn.leancloud.chatkit.view.LCIMDividerItemDecoration;
 import de.greenrobot.event.EventBus;
 
