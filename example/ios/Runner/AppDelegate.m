@@ -42,21 +42,21 @@
 #pragma mark -
 #pragma mark - UNUserNotificationCenterDelegate Method
 
-/**
- * Required for iOS 10+
- * 在前台收到推送内容, 执行的方法
- */
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-       willPresentNotification:(UNNotification *)notification
-         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-    NSDictionary *userInfo = notification.request.content.userInfo;
-    if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
-        //TODO:处理远程推送内容
-        NSLog(@"%@", userInfo);
-    }
-    // 需要执行这个方法，选择是否提醒用户，有 Badge、Sound、Alert 三种类型可以选择设置
-    completionHandler(UNNotificationPresentationOptionAlert);
-}
+///**
+// * Required for iOS 10+
+// * 在前台收到推送内容, 执行的方法
+// */
+//- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+//       willPresentNotification:(UNNotification *)notification
+//         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+//    NSDictionary *userInfo = notification.request.content.userInfo;
+//    if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
+//        //TODO:处理远程推送内容
+//        NSLog(@"%@", userInfo);
+//    }
+//    // 需要执行这个方法，选择是否提醒用户，有 Badge、Sound、Alert 三种类型可以选择设置
+//    completionHandler(UNNotificationPresentationOptionAlert);
+//}
 
 #pragma mark -
 #pragma mark - UIApplicationDelegate Method

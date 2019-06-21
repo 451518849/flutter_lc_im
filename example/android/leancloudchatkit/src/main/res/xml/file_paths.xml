@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="my_data" path="images/" />
-    <cache-path name="mycache" path="/storage/emulated/0/Android/data/cn.leancloud.imkitapplication/cache/"/>
-    <external-cache-path name="my_images" path="/storage/emulated/0/Android/data/cn.leancloud.imkitapplication/cache/"/>
-</paths>

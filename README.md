@@ -3,11 +3,12 @@
 ![](demo.jpeg)
 
 
-简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。[flutter_lc_im 0.0.6](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
+简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。[flutter_lc_im 0.0.7](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
 
 Flutter中的实现如下：
 		 
-        FlutterLcIm.register("appId", "appKey","当前用户的userId");
+        FlutterLcIm.register("appId", "appKey");
+        FlutterLcIm.login("当前用户的userId");
         Map user = {'name':'jason1','user_id':"1",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
         Map peer = {'name':'jason2','user_id':"3",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
         FlutterLcIm.pushToConversationView(user,peer);
@@ -19,7 +20,7 @@ FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^0.0.2
+		flutter_lc_im: ^0.0.7
 		  
 	flutter packages get
 ## Getting Andriod Started
@@ -91,22 +92,6 @@ Add this to your package's pubspec.yaml file:
 	}
 
 
-	/**
-	 * Required for iOS 10+
-	 * 在前台收到推送内容, 执行的方法
-	 */
-	- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-	       willPresentNotification:(UNNotification *)notification
-	         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-	    NSDictionary *userInfo = notification.request.content.userInfo;
-	    if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
-	        //TODO:处理远程推送内容
-	        NSLog(@"%@", userInfo);
-	    }
-	    // 需要执行这个方法，选择是否提醒用户，有 Badge、Sound、Alert 三种类型可以选择设置
-	    completionHandler(UNNotificationPresentationOptionAlert);
-	}
-
 	/*!
 	 * Required for iOS 7+
 	 */
@@ -132,5 +117,6 @@ Add this to your package's pubspec.yaml file:
 	}
 
 #### 第三步 Flutter项目中加入以下代码：
-        FlutterLcIm.register("appId", "Appkey");
+        FlutterLcIm.register("appId", "Appkey"); //main.dart
+        FlutterLcIm.login("当前用户的userId");    
         FlutterLcIm.pushToConversationView(user,peer);

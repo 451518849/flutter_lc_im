@@ -24,25 +24,26 @@ static BOOL isRegister = false;
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
     result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+      
   } else if ([@"register" isEqualToString:call.method]){
       
       if (!isRegister) {
           NSString *appId    = call.arguments[@"app_id"];
           NSString *appKey   = call.arguments[@"app_key"];
-          NSString *clientId = call.arguments[@"user_id"];
 
           [FlutterLcImPlugin registerConversationWithAppId:appId
-                                                    appKey:appKey
-                                                  clientId:clientId
-                                                    result:result];
+                                                    appKey:appKey];
           isRegister = true;
       }
 
       result(nil);
+  }else if([@"login" isEqualToString:call.method]){
+      NSString *userId = call.arguments[@"user_id"];
+      [FlutterLcImPlugin loginImWithUserId:userId result:result];
   }
   else if ([@"pushToConversationView" isEqualToString:call.method]) {
-      [FlutterLcImPlugin loginWithUser:call.arguments[@"user"]
-                                  peer:call.arguments[@"peer"]];
+      [FlutterLcImPlugin chatWithUser:call.arguments[@"user"]
+                                peer:call.arguments[@"peer"]];
       result(nil);
   }
   else if ([@"getConversationList" isEqualToString:call.method]) {
@@ -54,9 +55,7 @@ static BOOL isRegister = false;
 }
 
 + (void)registerConversationWithAppId:(NSString *)appId
-                               appKey:(NSString *)appKey
-                             clientId:(NSString *)clientId
-                               result:(FlutterResult)result{
+                               appKey:(NSString *)appKey{
     
     NSLog(@"register conversation");
     [FlutterLcImPlugin registerForRemoteNotification];
@@ -70,17 +69,6 @@ static BOOL isRegister = false;
     [LCCKInputViewPluginPickImage registerSubclass];
     [LCCKInputViewPluginLocation registerSubclass];
     
-    [LCCKUtil showProgressText:@"连接中..." duration:10.0f];
-    [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:clientId success:^{
-         NSLog(@"login success@");
-        [LCCKUtil hideProgress];
-        result(nil);
-    } failed:^(NSError *error) {
-        [LCCKUtil hideProgress];
-        NSLog(@"login error");
-        [LCCKUtil hideProgress];
-        result(@"login error");
-    }];
 }
 
 +(void)getConversationList:(FlutterResult)result{
@@ -96,7 +84,7 @@ static BOOL isRegister = false;
     
 }
 
-+ (void)loginWithUser:(NSDictionary *)userDic peer:(NSDictionary *)peerDic{
++ (void)chatWithUser:(NSDictionary *)userDic peer:(NSDictionary *)peerDic{
     
     LCCKUser *user = [[LCCKUser alloc] initWithUserId:userDic[@"user_id"] name:userDic[@"name"] avatarURL:userDic[@"avatar_url"]];
     LCCKUser *peer = [[LCCKUser alloc] initWithUserId:peerDic[@"user_id"] name:peerDic[@"name"] avatarURL:peerDic[@"avatar_url"]];
@@ -109,20 +97,24 @@ static BOOL isRegister = false;
     [LCChatKitHelper openConversationViewControllerWithPeerId:peer.userId];
     
 }
-//+ (void)loginWithUserId:(NSString *)userId peerId:(NSString *)peerId appUrl:(NSString *)url{
-//
-//    [FlutterLcImPlugin registerForRemoteNotification];
-//
-//    [LCCKUtil showProgressText:@"open client ..." duration:10.0f];
-//    [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:userId appUrl:url success:^{
-//        [LCCKUtil hideProgress];
-//        [LCChatKitHelper openConversationViewControllerWithPeerId:peerId];
-//    } failed:^(NSError *error) {
-//        [LCCKUtil hideProgress];
-//        NSLog(@"%@",error);
-//    }];
-//}
-//
+
++ (void)loginImWithUserId:(NSString *)userId result:(FlutterResult)result{
+
+    [FlutterLcImPlugin registerForRemoteNotification];
+
+    [LCCKUtil showProgressText:@"连接中..." duration:10.0f];
+    [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:userId success:^{
+        NSLog(@"login success@");
+        [LCCKUtil hideProgress];
+        result(nil);
+    } failed:^(NSError *error) {
+        [LCCKUtil hideProgress];
+        NSLog(@"login error");
+        [LCCKUtil hideProgress];
+        result(@"login error");
+    }];
+}
+
 
 
 /**

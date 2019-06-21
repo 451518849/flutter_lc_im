@@ -79,9 +79,9 @@ dependencies {
 //    compile fileTree(dir:"libs", include:["*.jar"])
 
     //avoscloud-sdk 为 LeanCloud基础包
-    implementation('cn.leancloud.android:avoscloud-sdk:v4.7.10')
+    api('cn.leancloud.android:avoscloud-sdk:v4.7.10')
     //avoscloud-push 为推送与实时聊天需要的包
-    implementation('cn.leancloud.android:avoscloud-push:v4.7.10@aar') { transitive = true }
+    api('cn.leancloud.android:avoscloud-push:v4.7.10@aar') { transitive = true }
 
     implementation 'com.alibaba:fastjson:1.1.70.android'
     implementation 'com.squareup.okhttp3:okhttp:3.8.1'
