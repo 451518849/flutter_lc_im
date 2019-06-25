@@ -4,6 +4,7 @@
 #import "FlutterLcImPlugin.h"
 #import <UserNotifications/UserNotifications.h>
 #import "LCCKUser.h"
+#import "NSDate+Extension.h"
 
 static BOOL isRegister = false;
 
@@ -12,6 +13,8 @@ static BOOL isRegister = false;
 @end
 
 @implementation FlutterLcImPlugin
+
+
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   FlutterMethodChannel* channel = [FlutterMethodChannel
@@ -31,7 +34,7 @@ static BOOL isRegister = false;
           NSString *appId    = call.arguments[@"app_id"];
           NSString *appKey   = call.arguments[@"app_key"];
 
-          [FlutterLcImPlugin registerConversationWithAppId:appId
+          [self registerConversationWithAppId:appId
                                                     appKey:appKey];
           isRegister = true;
       }
@@ -39,27 +42,39 @@ static BOOL isRegister = false;
       result(nil);
   }else if([@"login" isEqualToString:call.method]){
       NSString *userId = call.arguments[@"user_id"];
-      [FlutterLcImPlugin loginImWithUserId:userId result:result];
+      [self loginImWithUserId:userId result:result];
   }
   else if ([@"pushToConversationView" isEqualToString:call.method]) {
-      [FlutterLcImPlugin chatWithUser:call.arguments[@"user"]
+      [self chatWithUser:call.arguments[@"user"]
                                 peer:call.arguments[@"peer"]];
       result(nil);
   }
-  else if ([@"getConversationList" isEqualToString:call.method]) {
-      [FlutterLcImPlugin getConversationList:result];
+  else if ([@"getRecentConversationUsers" isEqualToString:call.method]) {
+      [self getRecentConversationUsers:result];
   }
   else {
     result(FlutterMethodNotImplemented);
   }
 }
 
-+ (void)registerConversationWithAppId:(NSString *)appId
+- (void)registerConversationWithAppId:(NSString *)appId
                                appKey:(NSString *)appKey{
     
     NSLog(@"register conversation");
-    [FlutterLcImPlugin registerForRemoteNotification];
+    [self registerForRemoteNotification];
 
+    // 临时域名配置
+    // 配置 SDK 储存
+    [AVOSCloud setServerURLString:@"https://avoscloud.com" forServiceModule:AVServiceModuleAPI];
+    // 配置 SDK 推送
+    [AVOSCloud setServerURLString:@"https://avoscloud.com" forServiceModule:AVServiceModulePush];
+    // 配置 SDK 云引擎
+    [AVOSCloud setServerURLString:@"https://avoscloud.com" forServiceModule:AVServiceModuleEngine];
+    // 配置 SDK 即时通讯
+    [AVOSCloud setServerURLString:@"https://router-g0-push.avoscloud.com" forServiceModule:AVServiceModuleRTM];
+    // 配置 SDK 统计
+    [AVOSCloud setServerURLString:@"https://avoscloud.com" forServiceModule:AVServiceModuleStatistics];
+    
     [LCChatKit setAppId:appId appKey:appKey];
     // 启用未读消息
     [AVIMClient setUnreadNotificationEnabled:true];
@@ -71,20 +86,79 @@ static BOOL isRegister = false;
     
 }
 
-+(void)getConversationList:(FlutterResult)result{
+/**
+ * Lean Cloud 获取最近联系的策略：当用户发起聊天时，lc会缓存聊天对象，并在服务器上为聊天对象设置一个有效时间，
+ * 每次获取联系人时，如果联系人还在有效时间内，则从服务器上获取联系人列表，如果联系人已经长时间没有和当前用户聊天则失效，则从本地缓存中获取数据，
+ * 所有聊天对象都会缓存到本地的FMDatabase中。因此，换设备后，只能获取服务器上还没有过期的聊天对象。
+ * 因为是单聊，不是组聊，只要获取到用户的user_id即可，不需要其他数据。
+ */
+- (void)getRecentConversationUsers:(FlutterResult)result{
     
-    NSMutableArray *userIds = [NSMutableArray array];
+    [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
+    NSMutableArray *messages = [NSMutableArray array];
     [[LCCKConversationListService sharedInstance] findRecentConversationsWithBlock:^(NSArray *conversations, NSInteger totalUnreadCount, NSError *error) {
         
         [conversations enumerateObjectsUsingBlock:^(AVIMConversation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [userIds addObject:obj.clientId];
+            NSString *peerId = @"";
+            if (obj.members.count == 2) {
+                if (obj.members[0] == obj.clientId){
+                    peerId = obj.members[1];
+                }else {
+                    peerId = obj.members[0];
+                }
+                
+                
+                NSData *jsonData = [obj.lastMessage.content dataUsingEncoding:NSUTF8StringEncoding];
+                NSDictionary *content = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                                        options:NSJSONReadingMutableContainers
+                                                                          error:nil];
+                NSLog(@"content:%@",content);
+                /**
+                 *
+                 kAVIMMessageMediaTypeNone = 0,
+                 kAVIMMessageMediaTypeText = -1,
+                 kAVIMMessageMediaTypeImage = -2,
+                 kAVIMMessageMediaTypeAudio = -3,
+                 kAVIMMessageMediaTypeVideo = -4,
+                 kAVIMMessageMediaTypeLocation = -5,
+                 kAVIMMessageMediaTypeFile = -6,
+                 kAVIMMessageMediaTypeRecalled = -127
+                 */
+                
+                NSString *text = @"";
+                if ([content[@"_lctype"] isEqual:@(-1)]) {
+                    text = content[@"_lctext"];
+                } else if([content[@"_lctype"] isEqual:@(-2)]){
+                    text = @"[图片]";
+                } else if([content[@"_lctype"] isEqual:@(-3)]){
+                    text = @"[语音]";
+                } else if([content[@"_lctype"] isEqual:@(-4)]){
+                    text = @"[视频]";
+                } else if([content[@"_lctype"] isEqual:@(-5)]){
+                    text = @"[位置]";
+                }else if([content[@"_lctype"] isEqual:@(-6)]){
+                    text = @"[文件]";
+                }else {
+                    text =@"[暂不支持格式]";
+                }
+                NSDictionary *message = @{
+                                        @"clientId":obj.clientId,
+                                        @"peerId":peerId,
+                                        @"unreadMessagesCount":@(obj.unreadMessagesCount),
+                                        @"lastMessageAt":[NSDate timeInfoWithDate:obj.lastMessageAt],
+                                        @"peerName":content[@"_lcattrs"][@"username"],
+                                        @"lastMessageContent":text,
+                                        };
+                [messages addObject:message];
+            }
         }];
-        result(userIds);
+        NSLog(@"recent conversation users:%@",messages);
+        result(messages);
     }];
     
 }
 
-+ (void)chatWithUser:(NSDictionary *)userDic peer:(NSDictionary *)peerDic{
+- (void)chatWithUser:(NSDictionary *)userDic peer:(NSDictionary *)peerDic{
     
     LCCKUser *user = [[LCCKUser alloc] initWithUserId:userDic[@"user_id"] name:userDic[@"name"] avatarURL:userDic[@"avatar_url"]];
     LCCKUser *peer = [[LCCKUser alloc] initWithUserId:peerDic[@"user_id"] name:peerDic[@"name"] avatarURL:peerDic[@"avatar_url"]];
@@ -98,9 +172,9 @@ static BOOL isRegister = false;
     
 }
 
-+ (void)loginImWithUserId:(NSString *)userId result:(FlutterResult)result{
+- (void)loginImWithUserId:(NSString *)userId result:(FlutterResult)result{
 
-    [FlutterLcImPlugin registerForRemoteNotification];
+    [self registerForRemoteNotification];
 
     [LCCKUtil showProgressText:@"连接中..." duration:10.0f];
     [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:userId success:^{
@@ -120,7 +194,7 @@ static BOOL isRegister = false;
 /**
  * 初始化UNUserNotificationCenter
  */
-+ (void)registerForRemoteNotification {
+- (void)registerForRemoteNotification {
     // iOS 10 兼容
     if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"10.0")) {
         

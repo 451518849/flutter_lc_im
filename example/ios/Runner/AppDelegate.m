@@ -11,6 +11,16 @@
   // Override point for customization after application launch.
     [GeneratedPluginRegistrant registerWithRegistry:self];
 
+    
+    [AVOSCloud setServerURLString:@"https://avoscloud.com" forServiceModule:AVServiceModuleAPI];
+    // 配置 SDK 推送
+    [AVOSCloud setServerURLString:@"https://avoscloud.com" forServiceModule:AVServiceModulePush];
+    // 配置 SDK 云引擎
+    [AVOSCloud setServerURLString:@"https://avoscloud.com" forServiceModule:AVServiceModuleEngine];
+    // 配置 SDK 即时通讯
+    [AVOSCloud setServerURLString:@"https://router-g0-push.avoscloud.com" forServiceModule:AVServiceModuleRTM];
+    
+    
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 

@@ -1,9 +1,11 @@
 # flutter_lc_im
 
-![](demo.jpeg)
+![](index.jpeg)
+![](list.jpeg)
 
 
-简单封装了LeanCloud的IM功能，给出了单聊和获取会话列表用户ID的功能。[flutter_lc_im 0.0.7](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
+简单封装了LeanCloud的IM功能，给出了单聊和获取最近联系人列表。其中单聊功能使用的是原生实现，只是封装了一层跳转。而最近联系人列表则是使用Flutter重绘实现的。因此，最近联系人列表可以根据自己的需要定制界面。
+[flutter_lc_im 0.1.0](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
 
 Flutter中的实现如下：
 		 
@@ -11,16 +13,25 @@ Flutter中的实现如下：
         FlutterLcIm.login("当前用户的userId");
         Map user = {'name':'jason1','user_id':"1",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
         Map peer = {'name':'jason2','user_id':"3",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
+        //跳转到聊天界面
         FlutterLcIm.pushToConversationView(user,peer);
-        FlutterLcIm.getConversationList()
         
+        //跳转到最近联系人列表
+        FlutterLcIm.getRecentConversationUsers().then((res) {
+          if (res != [] && res != null) {
+            Conversations conversations = Conversations.fromJson(res);
+                      print('conversations:${conversations.conversations}');
+
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => ConversationListPage(conversations: conversations,)));
+          }        
 FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，第二个参数peer是聊天对象.
 
 #### 安装方式
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^0.0.7
+		flutter_lc_im: ^0.1.0
 		  
 	flutter packages get
 ## Getting Andriod Started
@@ -120,3 +131,12 @@ Add this to your package's pubspec.yaml file:
         FlutterLcIm.register("appId", "Appkey"); //main.dart
         FlutterLcIm.login("当前用户的userId");    
         FlutterLcIm.pushToConversationView(user,peer);
+        
+        FlutterLcIm.getRecentConversationUsers().then((res) {
+          if (res != [] && res != null) {
+            Conversations conversations = Conversations.fromJson(res);
+                      print('conversations:${conversations.conversations}');
+
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => ConversationListPage(conversations: conversations,)));
+          }

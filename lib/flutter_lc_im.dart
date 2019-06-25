@@ -34,8 +34,8 @@ class FlutterLcIm {
     return result;
   }
 
-  static Future<dynamic> getConversationList() async {
-    var result = await _channel.invokeMethod('getConversationList');
+  static Future<dynamic> getRecentConversationUsers() async {
+    var result = await _channel.invokeMethod('getRecentConversationUsers');
     return result;
   }
 }
