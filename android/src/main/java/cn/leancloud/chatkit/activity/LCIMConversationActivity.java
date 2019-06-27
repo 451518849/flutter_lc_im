@@ -17,6 +17,7 @@ import com.avos.avoscloud.im.v2.AVIMConversationsQuery;
 import com.avos.avoscloud.im.v2.callback.AVIMConversationCreatedCallback;
 import com.avos.avoscloud.im.v2.callback.AVIMConversationQueryCallback;
 import com.avos.avoscloud.im.v2.callback.AVIMConversationCallback;
+import com.xiaofa.flutter_lc_im.FlutterLcImPlugin;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,8 @@ import cn.leancloud.chatkit.utils.LCIMLogUtils;
  * 包含会话的创建以及拉取，具体的 UI 细节在 LCIMConversationFragment 中
  */
 public class LCIMConversationActivity extends AppCompatActivity {
+
+  public static FlutterLcImPlugin.FlutterImCallback flutterImCallback;
 
   protected LCIMConversationFragment conversationFragment;
 
@@ -149,5 +152,11 @@ public class LCIMConversationActivity extends AppCompatActivity {
    */
   private void showToast(String content) {
     Toast.makeText(LCIMConversationActivity.this, content, Toast.LENGTH_SHORT).show();
+  }
+
+  @Override
+  protected void onDestroy() {
+    flutterImCallback.refreshMessage("conversation activity is close");
+    super.onDestroy();
   }
 }

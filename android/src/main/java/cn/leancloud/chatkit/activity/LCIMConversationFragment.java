@@ -598,6 +598,7 @@ public class LCIMConversationFragment extends Fragment {
         }
       }
     });
+    fetchMessages();
   }
 
   private boolean filterException(Exception e) {

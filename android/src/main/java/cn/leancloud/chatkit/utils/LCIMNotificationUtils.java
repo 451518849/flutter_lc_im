@@ -64,14 +64,16 @@ public class LCIMNotificationUtils {
   }
 
   public static void showNotification(Context context, String title, String content, String sound, Intent intent) {
-    PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, 0);
-    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-        .setSmallIcon(context.getApplicationInfo().icon)
-        .setContentTitle(title).setAutoCancel(true).setContentIntent(contentIntent)
-        .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND)
-        .setContentText(content);
+    System.out.println("到推送的最后一步了");
+    System.out.println("title："+ title);
+    PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context,"default")
+            .setSmallIcon(context.getApplicationInfo().icon)
+            .setContentTitle(title).setAutoCancel(true).setContentIntent(contentIntent)
+            .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND)
+            .setContentText(content);
     NotificationManager manager =
-      (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     Notification notification = mBuilder.build();
     if (sound != null && sound.trim().length() > 0) {
       notification.sound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + sound);

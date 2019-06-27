@@ -4,10 +4,26 @@
 ![](list.jpeg)
 
 
-简单封装了LeanCloud的IM功能，给出了单聊和获取最近联系人列表。其中单聊功能使用的是原生实现，只是封装了一层跳转。而最近联系人列表则是使用Flutter重绘实现的。因此，最近联系人列表可以根据自己的需要定制界面。
-[flutter_lc_im 0.1.0](https://pub.dev/packages/flutter_lc_im#-readme-tab-)
+**简单封装了LeanCloud的即时通讯功能（iOS/Android），给出了单聊和获取最近联系人列表。其中单聊功能使用的是原生实现，只是封装了一层跳转。而最近联系人列表则是使用Flutter重绘实现的。因此，最近联系人列表可以根据自己的需要定制界面。框架地址：
+[flutter_lc_im 0.1.2](https://pub.dev/packages/flutter_lc_im#-readme-tab-)**
 
-Flutter中的实现如下：
+### 封装的功能有
+
+	1. 一对一聊天
+	1. 获取聊天列表
+	1. 根据聊天情况刷新聊天列表
+	1. 给出聊天列表上的未读消息数
+	1. 即时消息推送
+
+### 安装方式
+Add this to your package's pubspec.yaml file:
+
+	dependencies:
+		flutter_lc_im: ^0.1.1
+		  
+	flutter packages get
+
+### Flutter中的实现如下：
 		 
         FlutterLcIm.register("appId", "appKey");
         FlutterLcIm.login("当前用户的userId");
@@ -27,13 +43,6 @@ Flutter中的实现如下：
           }        
 FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，第二个参数peer是聊天对象.
 
-#### 安装方式
-Add this to your package's pubspec.yaml file:
-
-	dependencies:
-		flutter_lc_im: ^0.1.0
-		  
-	flutter packages get
 ## Getting Andriod Started
 #### 第一步 AndroidManifest.xml加入以下配置
     <uses-permission android:name="android.permission.INTERNET" />
@@ -53,8 +62,18 @@ Add this to your package's pubspec.yaml file:
 		</activity>
 	</application>
 #### 第二步 Flutter项目中加入以下代码：
-        FlutterLcIm.register("appId", "Appkey");
+        FlutterLcIm.register("appId", "Appkey"); //main.dart
+        FlutterLcIm.login("当前用户的userId");    
         FlutterLcIm.pushToConversationView(user,peer);
+        
+        FlutterLcIm.getRecentConversationUsers().then((res) {
+          if (res != [] && res != null) {
+            Conversations conversations = Conversations.fromJson(res);
+                      print('conversations:${conversations.conversations}');
+
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => ConversationListPage(conversations: conversations,)));
+          }
 
 ## Getting iOS Started
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
 import 'package:flutter_lc_im_example/conversation.dart';
@@ -15,7 +15,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
-
+  
   @override
   void initState() {
     super.initState();
@@ -75,8 +75,8 @@ class _MyAppState extends State<MyApp> {
               "http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"
         };
         Map peer = {
-          'name': 'jason2',
-          'user_id': "4",
+          'name': 'Vector',
+          'user_id': "1",
           'avatar_url':
               "http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"
         };
