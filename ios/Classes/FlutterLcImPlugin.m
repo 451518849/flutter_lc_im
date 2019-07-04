@@ -90,8 +90,10 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
 - (void)reloadMessage:(FlutterResult)result {
     [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
     NSMutableArray *messages = [NSMutableArray array];
+    __block NSUInteger badgeCount = 0;
+    
     [[LCCKConversationListService sharedInstance] findRecentConversationsWithBlock:^(NSArray *conversations, NSInteger totalUnreadCount, NSError *error) {
-        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:totalUnreadCount];
+        NSLog(@"totalUnreadCount :%ld",totalUnreadCount);
         
         [conversations enumerateObjectsUsingBlock:^(AVIMConversation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *peerId = @"";
@@ -163,6 +165,8 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
                         text =@"[暂不支持格式]";
                     }
                     
+                    badgeCount += obj.unreadMessagesCount;
+                    
                     NSDictionary *message = @{
                                               @"clientId":obj.clientId,
                                               @"peerId":peerId,
@@ -177,6 +181,8 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
             }
         }];
         NSLog(@"recent conversation users:%@",messages);
+        NSLog(@"badgeCount :%ld",badgeCount);
+        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:badgeCount];
         result(messages);
     }];
     
@@ -185,9 +191,10 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
 - (void)pushMessageToFlutter{
     [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
     NSMutableArray *messages = [NSMutableArray array];
+    __block NSUInteger badgeCount = 0;
     [[LCCKConversationListService sharedInstance] findRecentConversationsWithBlock:^(NSArray *conversations, NSInteger totalUnreadCount, NSError *error) {
         
-        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:totalUnreadCount];
+        NSLog(@"totalUnreadCount :%ld",totalUnreadCount);
         
         [conversations enumerateObjectsUsingBlock:^(AVIMConversation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *peerId = @"";
@@ -264,7 +271,8 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
                     }else {
                         text =@"[暂不支持格式]";
                     }
-                    
+                    NSLog(@"obj.unreadMessagesCount:%ld",obj.unreadMessagesCount);
+                    badgeCount += obj.unreadMessagesCount;
                     NSDictionary *message = @{
                                               @"clientId":obj.clientId,
                                               @"peerId":peerId,
@@ -279,6 +287,8 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
             }
         }];
         if (eventBlock != nil) {
+            NSLog(@"badgeCount :%ld",badgeCount);
+            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:badgeCount];
             eventBlock(messages);
         }
     }];

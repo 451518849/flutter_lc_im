@@ -9,11 +9,6 @@
 #ifndef LCCKConstants_h
 #define LCCKConstants_h
 
-#pragma mark - 用以产生Demo中的联系人数据的宏定义
-///=============================================================================
-/// @name 用以产生Demo中的联系人数据的宏定义
-///=============================================================================
-
 #define LCCKProfileKeyPeerId        @"peerId"
 #define LCCKProfileKeyName          @"username"
 #define LCCKProfileKeyAvatarURL     @"avatarURL"

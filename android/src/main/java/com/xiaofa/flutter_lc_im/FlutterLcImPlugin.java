@@ -214,50 +214,62 @@ public class FlutterLcImPlugin implements MethodCallHandler {
 
       System.out.println("clientId :"+ clientId);
       System.out.println("peerId :"+ peerId);
-      System.out.println("getLastMessage From :"+ conversation.getLastMessage().getFrom());
-      System.out.println("conversation.getName :"+ conversation.getName());
-
-      //获取最新消息的时间
-      SimpleDateFormat sdf= new SimpleDateFormat("MM-dd HH:mm");
-      String lastMessageAt = sdf.format(conversation.getLastMessageAt());
+//      System.out.println("getLastMessage From :"+ conversation.getLastMessage().getFrom());
+//      System.out.println("conversation.getName :"+ conversation.getName());
 
       // json to map
-      Map<String,Object> content = JSON.parseObject(conversation.getLastMessage().getContent());
+      Map<String,Object> content = null;
+      if (conversation.getLastMessage() != null){
 
-      System.out.println("content :"+ content);
+        //获取最新消息的时间
+        SimpleDateFormat sdf= new SimpleDateFormat("MM-dd HH:mm");
+        String lastMessageAt = sdf.format(conversation.getLastMessageAt());
 
-      Map<String,Object> attrs = (Map<String,Object>)content.get("_lcattrs");
+        content = JSON.parseObject(conversation.getLastMessage().getContent());
+        System.out.println("content :"+ content);
 
-      String peerName = "";
-      //attrs为null表示最后一句话是当前用户说的
-      if (attrs == null) {
-        peerName = peerId;
+        Map<String,Object> attrs = (Map<String,Object>)content.get("_lcattrs");
+
+        String peerName = "";
+        //attrs为null表示最后一句话是当前用户说的
+        if (attrs == null || attrs.get("username") == null) {
+          peerName = peerId;
+        }else {
+          peerName = attrs.get("username").toString();
+        }
+        String message = "";
+        Integer messageType = Integer.valueOf(content.get("_lctype").toString());
+        if (messageType == -1){
+          message = content.get("_lctext").toString();
+        }else if(messageType == -2){
+          message = "[图片]";
+        }else if(messageType == -3){
+          message = "[语音]";
+        }else if(messageType == -4){
+          message = "[视频]";
+        }else if(messageType == -5){
+          message = "[位置]";
+        }else if(messageType == -6){
+          message = "[文件]";
+        }else {
+          message ="[暂不支持格式]";
+        }
+        con.put("clientId",clientId);
+        con.put("peerId",peerId);
+        con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
+        con.put("lastMessageAt",lastMessageAt);
+        con.put("peerName",peerName);
+        con.put("lastMessageContent",message);
+
       }else {
-        peerName = attrs.get("username").toString();
+        con.put("clientId",clientId);
+        con.put("peerId",peerId);
+        con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
+        con.put("lastMessageAt","");
+        con.put("peerName",peerId);
+        con.put("lastMessageContent","");
+
       }
-      String message = "";
-      Integer messageType = Integer.valueOf(content.get("_lctype").toString());
-      if (messageType == -1){
-        message = content.get("_lctext").toString();
-      }else if(messageType == -2){
-        message = "[图片]";
-      }else if(messageType == -3){
-        message = "[语音]";
-      }else if(messageType == -4){
-        message = "[视频]";
-      }else if(messageType == -5){
-        message = "[位置]";
-      }else if(messageType == -6){
-        message = "[文件]";
-      }else {
-        message ="[暂不支持格式]";
-      }
-      con.put("clientId",clientId);
-      con.put("peerId",peerId);
-      con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
-      con.put("lastMessageAt",lastMessageAt);
-      con.put("peerName",peerName);
-      con.put("lastMessageContent",message);
 
       System.out.println("conversation :"+ con);
 
@@ -291,50 +303,66 @@ public class FlutterLcImPlugin implements MethodCallHandler {
       }
 
       System.out.println("peerId :"+ peerId);
-      System.out.println("getLastMessage From :"+ conversation.getLastMessage().getFrom());
-      System.out.println("conversation.getName :"+ conversation.getName());
+      System.out.println("conversation :"+ conversation.getLastMessage());
+      System.out.println("conversation :"+ conversation.getLastMessageAt());
 
-      //获取最新消息的时间
-      SimpleDateFormat sdf= new SimpleDateFormat("MM-dd HH:mm");
-      String lastMessageAt = sdf.format(conversation.getLastMessageAt());
+//      System.out.println("getLastMessage From :"+ conversation.getLastMessage().getFrom());
+//      System.out.println("conversation.getName :"+ conversation.getName());
 
       // json to map
-      Map<String,Object> content = JSON.parseObject(conversation.getLastMessage().getContent());
+      Map<String,Object> content = null;
+      if (conversation.getLastMessage() != null){
 
-      System.out.println("content :"+ content);
+        //获取最新消息的时间
+        SimpleDateFormat sdf= new SimpleDateFormat("MM-dd HH:mm");
+        String lastMessageAt = sdf.format(conversation.getLastMessageAt());
 
-      Map<String,Object> attrs = (Map<String,Object>)content.get("_lcattrs");
+        content = JSON.parseObject(conversation.getLastMessage().getContent());
+        System.out.println("content :"+ content);
 
-      String peerName = "";
-      //attrs为null表示最后一句话是当前用户说的
-      if (attrs == null) {
-        peerName = peerId;
+        Map<String,Object> attrs = (Map<String,Object>)content.get("_lcattrs");
+
+        String peerName = "";
+        //attrs为null表示最后一句话是当前用户说的
+        if (attrs == null || attrs.get("username") == null) {
+          peerName = peerId;
+        }else {
+          peerName = attrs.get("username").toString();
+        }
+        String message = "";
+        Integer messageType = Integer.valueOf(content.get("_lctype").toString());
+        if (messageType == -1){
+          message = content.get("_lctext").toString();
+        }else if(messageType == -2){
+          message = "[图片]";
+        }else if(messageType == -3){
+          message = "[语音]";
+        }else if(messageType == -4){
+          message = "[视频]";
+        }else if(messageType == -5){
+          message = "[位置]";
+        }else if(messageType == -6){
+          message = "[文件]";
+        }else {
+          message ="[暂不支持格式]";
+        }
+        con.put("clientId",clientId);
+        con.put("peerId",peerId);
+        con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
+        con.put("lastMessageAt",lastMessageAt);
+        con.put("peerName",peerName);
+        con.put("lastMessageContent",message);
+
       }else {
-        peerName = attrs.get("username").toString();
+        con.put("clientId",clientId);
+        con.put("peerId",peerId);
+        con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
+        con.put("lastMessageAt","");
+        con.put("peerName",peerId);
+        con.put("lastMessageContent","");
+
       }
-      String message = "";
-      Integer messageType = Integer.valueOf(content.get("_lctype").toString());
-      if (messageType == -1){
-        message = content.get("_lctext").toString();
-      }else if(messageType == -2){
-        message = "[图片]";
-      }else if(messageType == -3){
-        message = "[语音]";
-      }else if(messageType == -4){
-        message = "[视频]";
-      }else if(messageType == -5){
-        message = "[位置]";
-      }else if(messageType == -6){
-        message = "[文件]";
-      }else {
-        message ="[暂不支持格式]";
-      }
-      con.put("clientId",clientId);
-      con.put("peerId",peerId);
-      con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
-      con.put("lastMessageAt",lastMessageAt);
-      con.put("peerName",peerName);
-      con.put("lastMessageContent",message);
+
 
       System.out.println("conversation :"+ con);
 
