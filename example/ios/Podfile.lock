@@ -27,7 +27,7 @@ PODS:
     - "UITableView+FDTemplateLayoutCell (~> 1.5.beta)"
   - FDStackView (1.0.1)
   - Flutter (1.0.0)
-  - flutter_lc_im (0.0.4):
+  - flutter_lc_im (0.1.2):
     - FakeChatKit (= 2.3.12)
     - Flutter
     - TWMessageBarManager (= 1.8.1)
@@ -86,7 +86,7 @@ SPEC CHECKSUMS:
   FakeChatKit: 2a4e5e74492bfa49853ed5c96d31c89dcc1167b6
   FDStackView: fc0697e5be2022c8af36ce66e9e2061006058ba8
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
-  flutter_lc_im: e2a32232a95dc05fd35fe83e52f1a68fa14c88e4
+  flutter_lc_im: 08d1cb59be2a776ab2a4809484fd93b7585ad6f1
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   Masonry: 7c429b56da9d4ee0bbb3ed77a5ea710d6a5df39e
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1

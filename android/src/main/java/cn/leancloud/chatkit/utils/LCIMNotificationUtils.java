@@ -11,7 +11,7 @@ import android.net.Uri;
 import java.util.LinkedList;
 import java.util.List;
 
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 /**
  * Created by wli on 15/8/26.
