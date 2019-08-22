@@ -1,0 +1,129 @@
+Flutter crash report; please file at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter run
+
+## exception
+
+ProcessException: ProcessException: No such file or directory
+  Command: /usr/bin/xcodebuild -project /Users/wangxiaofa/Desktop/flutter_plugin/LLCIM/flutter_lc_im/ios/Runner.xcodeproj -target Runner -showBuildSettings
+
+```
+#0      _ProcessImpl._runAndWait (dart:io-patch/process_patch.dart:489:7)
+#1      _runNonInteractiveProcessSync (dart:io-patch/process_patch.dart:634:18)
+#2      Process.runSync (dart:io-patch/process_patch.dart:66:12)
+#3      LocalProcessManager.runSync (package:process/src/interface/local_process_manager.dart:83:20)
+#4      _runWithLoggingSync (package:flutter_tools/src/base/process.dart:343:48)
+#5      runCheckedSync (package:flutter_tools/src/base/process.dart:297:10)
+#6      XcodeProjectInterpreter.getBuildSettings (package:flutter_tools/src/ios/xcodeproj.dart:177:24)
+#7      IosProject.buildSettings (package:flutter_tools/src/project.dart:364:42)
+#8      IosProject.isSwift (package:flutter_tools/src/project.dart:356:23)
+#9      RunCommand.usageValues (package:flutter_tools/src/commands/run.dart:229:35)
+<asynchronous suspension>
+#10     FlutterCommand._sendUsage (package:flutter_tools/src/runner/flutter_command.dart:411:58)
+<asynchronous suspension>
+#11     FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:392:17)
+<asynchronous suspension>
+#12     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:29)
+<asynchronous suspension>
+#13     _rootRun (dart:async/zone.dart:1124:13)
+#14     _CustomZone.run (dart:async/zone.dart:1021:19)
+#15     _runZoned (dart:async/zone.dart:1516:10)
+#16     runZoned (dart:async/zone.dart:1463:12)
+#17     AppContext.run (package:flutter_tools/src/base/context.dart:152:18)
+<asynchronous suspension>
+#18     FlutterCommand.run (package:flutter_tools/src/runner/flutter_command.dart:375:20)
+#19     CommandRunner.runCommand (package:args/command_runner.dart:197:27)
+<asynchronous suspension>
+#20     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:396:21)
+<asynchronous suspension>
+#21     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:29)
+<asynchronous suspension>
+#22     _rootRun (dart:async/zone.dart:1124:13)
+#23     _CustomZone.run (dart:async/zone.dart:1021:19)
+#24     _runZoned (dart:async/zone.dart:1516:10)
+#25     runZoned (dart:async/zone.dart:1463:12)
+#26     AppContext.run (package:flutter_tools/src/base/context.dart:152:18)
+<asynchronous suspension>
+#27     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:356:19)
+<asynchronous suspension>
+#28     CommandRunner.run.<anonymous closure> (package:args/command_runner.dart:112:25)
+#29     new Future.sync (dart:async/future.dart:224:31)
+#30     CommandRunner.run (package:args/command_runner.dart:112:14)
+#31     FlutterCommandRunner.run (package:flutter_tools/src/runner/flutter_command_runner.dart:242:18)
+#32     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:62:22)
+<asynchronous suspension>
+#33     _rootRun (dart:async/zone.dart:1124:13)
+#34     _CustomZone.run (dart:async/zone.dart:1021:19)
+#35     _runZoned (dart:async/zone.dart:1516:10)
+#36     runZoned (dart:async/zone.dart:1500:12)
+#37     run.<anonymous closure> (package:flutter_tools/runner.dart:60:18)
+<asynchronous suspension>
+#38     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:29)
+<asynchronous suspension>
+#39     _rootRun (dart:async/zone.dart:1124:13)
+#40     _CustomZone.run (dart:async/zone.dart:1021:19)
+#41     _runZoned (dart:async/zone.dart:1516:10)
+#42     runZoned (dart:async/zone.dart:1463:12)
+#43     AppContext.run (package:flutter_tools/src/base/context.dart:152:18)
+<asynchronous suspension>
+#44     runInContext (package:flutter_tools/src/context_runner.dart:56:24)
+<asynchronous suspension>
+#45     run (package:flutter_tools/runner.dart:51:10)
+#46     main (package:flutter_tools/executable.dart:62:9)
+<asynchronous suspension>
+#47     main (file:///Users/wangxiaofa/Desktop/flutter/packages/flutter_tools/bin/flutter_tools.dart:8:3)
+#48     _startIsolate.<anonymous closure> (dart:isolate-patch/isolate_patch.dart:299:32)
+#49     _RawReceivePortImpl._handleMessage (dart:isolate-patch/isolate_patch.dart:172:12)
+```
+
+## flutter doctor
+
+```
+[32m[✓][39m Flutter (Channel stable, v1.7.8+hotfix.3, on Mac OS X 10.14.5 18F132, locale zh-Hans-CN)
+    [32m•[39m Flutter version 1.7.8+hotfix.3 at /Users/wangxiaofa/Desktop/flutter
+    [32m•[39m Framework revision b712a172f9 (5 days ago), 2019-07-09 13:14:38 -0700
+    [32m•[39m Engine revision 54ad777fd2
+    [32m•[39m Dart version 2.4.0
+
+[32m[✓][39m Android toolchain - develop for Android devices (Android SDK version 29.0.0)
+    [32m•[39m Android SDK at /Users/wangxiaofa/Library/Android/sdk
+    [32m•[39m Android NDK location not configured (optional; useful for native profiling support)
+    [32m•[39m Platform android-29, build-tools 29.0.0
+    [32m•[39m Java binary at: /Applications/Android Studio.app/Contents/jre/jdk/Contents/Home/bin/java
+    [32m•[39m Java version OpenJDK Runtime Environment (build 1.8.0_152-release-1343-b01)
+    [32m•[39m All Android licenses accepted.
+
+[32m[✓][39m Xcode - develop for iOS and macOS (Xcode 10.2.1)
+    [32m•[39m Xcode at /Applications/Xcode.app/Contents/Developer
+    [32m•[39m Xcode 10.2.1, Build version 10E1001
+    [32m•[39m CocoaPods version 1.6.0.beta.2
+
+[32m[✓][39m iOS tools - develop for iOS devices
+    [32m•[39m ios-deploy 1.9.4
+
+[32m[✓][39m Android Studio (version 3.4)
+    [32m•[39m Android Studio at /Applications/Android Studio.app/Contents
+    [32m•[39m Flutter plugin version 33.3.1
+    [32m•[39m Dart plugin version 182.5215
+    [32m•[39m Java version OpenJDK Runtime Environment (build 1.8.0_152-release-1343-b01)
+
+[33m[!][39m IntelliJ IDEA Ultimate Edition (version 2017.2.6)
+    [32m•[39m IntelliJ at /Applications/IntelliJ IDEA.app
+    [31m✗[39m Flutter plugin not installed; this adds Flutter specific functionality.
+    [31m✗[39m Dart plugin not installed; this adds Dart specific functionality.
+    [32m•[39m For information about installing plugins, see
+      https://flutter.dev/intellij-setup/#installing-the-plugins
+
+[32m[✓][39m Proxy Configuration
+    [32m•[39m HTTP_PROXY is set
+    [32m•[39m NO_PROXY is localhost,127.0.0.1,localaddress,.localdomain.com
+    [32m•[39m NO_PROXY contains 127.0.0.1
+    [32m•[39m NO_PROXY contains localhost
+
+[32m[✓][39m Connected device (1 available)
+    [32m•[39m iPhone 7 • CF43A6BF-C55D-4C79-B635-1F285A46310D • ios • com.apple.CoreSimulator.SimRuntime.iOS-12-2 (simulator)
+
+[33m![39m Doctor found issues in 1 category.
+```

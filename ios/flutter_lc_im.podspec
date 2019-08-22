@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_lc_im'
-  s.version          = '0.1.2'
+  s.version          = '0.2.0'
   s.summary          = 'A LeanCloud IM flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.

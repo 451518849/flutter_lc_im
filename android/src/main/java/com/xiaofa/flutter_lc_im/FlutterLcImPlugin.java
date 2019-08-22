@@ -19,6 +19,7 @@ import com.avos.avoscloud.im.v2.AVIMMessageHandler;
 import com.avos.avoscloud.im.v2.AVIMMessageManager;
 import com.avos.avoscloud.im.v2.AVIMTypedMessage;
 import com.avos.avoscloud.im.v2.AVIMTypedMessageHandler;
+import com.avos.avoscloud.im.v2.Conversation;
 import com.avos.avoscloud.im.v2.callback.AVIMClientCallback;
 
 import java.text.SimpleDateFormat;
@@ -79,52 +80,69 @@ public class FlutterLcImPlugin implements MethodCallHandler {
 
   @Override
   public void onMethodCall(MethodCall call, Result result) {
-    if (call.method.equals("getPlatformVersion")) {
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
-    }
-    else if(call.method.equals("register")){
-      if (!isRegister){
-        String appId = call.argument("app_id");
-        String appKey = call.argument("app_key");
-        this.initChatView(appId,appKey,result);
-        isRegister = true;
-      } else
-      {
-        result.success("success");
-      }
-    }
-    else if (call.method.equals("login")){
-      String userId = call.argument("user_id");
-      this.login(userId,result);
-    }
-    else if (call.method.equals("pushToConversationView")){
-      Map user = call.argument("user");
-      Map peer = call.argument("peer");
-      this.pushToConversationView(user,peer);
-      result.success("");
-    } else if (call.method.equals("getRecentConversationUsers")){
-      getRecentConversationUsers(result);
-    }
-    else {
-      result.notImplemented();
+
+    switch (call.method){
+      case "getPlatformVersion":
+        result.success("Android " + android.os.Build.VERSION.RELEASE);
+        break;
+      case "register":
+        if (!isRegister){
+          String appId = call.argument("app_id");
+          String appKey = call.argument("app_key");
+          this.initSetting(appId,appKey,result);
+          isRegister = true;
+        } else
+        {
+          result.success("success");
+        }
+        break;
+      case "login":
+        String userId = call.argument("user_id");
+        this.login(userId,result);
+        break;
+      case "pushToConversationView":
+        Map user = call.argument("user");
+        Map peer = call.argument("peer");
+        this.pushToConversationView(user,peer);
+        result.success("");
+        break;
+      case "getRecentConversationUsers":
+        getRecentConversationUsers(result);
+        break;
+        default:
+          result.notImplemented();
+          break;
     }
   }
 
-
-  private void initChatView(String appId, String appKey, final Result result){
+ /*
+ *  开启聊天
+ * */
+  private void initSetting(String appId, String appKey, final Result result){
 
     LCChatKit.getInstance().init(context, appId, appKey);
     AVIMClient.setAutoOpen(true);
     AVIMClient.setUnreadNotificationEnabled(true);
 
   }
-
+/*
+*  初始化推送和聊天信息
+* */
   private void login(String userId, final Result result){
 
-    System.out.println("初始化推送============");
+   initPushService(userId,result);
+
+   initChatService(userId,result);
+
+    initFlutterChannel();
+  }
+
+  private void initPushService(String userId, final Result result){
+
     PushService.setAutoWakeUp(true);
     PushService.setDefaultPushCallback(context,activity.getClass());
-    PushService.setDefaultChannelId(context, "default");
+    PushService.setDefaultChannelId(context, "default");//这个channel和订阅的chanenl不一样，只能为default
+    PushService.subscribe(context,userId,activity.getClass()); //订阅频道,这一步必须，否则无法收到推送
 
     //每次登录后设置推送
     AVIMMessageManager.registerMessageHandler(AVIMTypedMessage.class,new CustomMessageHandler(context));
@@ -140,10 +158,10 @@ public class FlutterLcImPlugin implements MethodCallHandler {
         }
       }
     });
+  }
 
-    System.out.println("activity.getClass()："+ activity.getClass());
-
-    //初始化登录
+  private void initChatService(String userId, final Result result){
+    //初始化聊天登录
     LCChatKit.getInstance().open(userId, new AVIMClientCallback() {
       @Override
       public void done(AVIMClient avimClient, AVIMException e) {
@@ -155,9 +173,13 @@ public class FlutterLcImPlugin implements MethodCallHandler {
         }
       }
     });
+  }
 
 
-
+  /*
+  * 初始化flutter和android之间的信道
+  * */
+  private void initFlutterChannel(){
     //native to flutter by channel flutter_lc_im_native
     setEventToFlutter();
 
@@ -188,102 +210,27 @@ public class FlutterLcImPlugin implements MethodCallHandler {
   }
 
   public void getRecentConversationUsers(final Result result){
-    List<String> convIdList = LCIMConversationItemCache.getInstance().getSortedConversationList();
-    String clientId =  LCChatKit.getInstance().getClient().getClientId();
 
-    List conversationList = new ArrayList<>();
-    for (String convId : convIdList) {
-
-      Map<String,Object> con = new HashMap<>();
-      AVIMConversation conversation =  LCChatKit.getInstance().getClient().getConversation(convId);
-
-      System.out.println("getMembers :"+ conversation.getMembers());
-      // 获取peerId
-      String peerId = "";
-      if (conversation.getMembers().size() == 2){
-        if (conversation.getMembers().get(0).toString().equals(clientId)){
-          peerId = conversation.getMembers().get(1);
-          System.out.println("conversation.getMembers().get(1) :"+ conversation.getMembers().get(1));
-        }else {
-          peerId = conversation.getMembers().get(0);
-          System.out.println("conversation.getMembers().get(0) :"+ conversation.getMembers().get(0));
-        }
-      }else {
-        continue;
-      }
-
-      System.out.println("clientId :"+ clientId);
-      System.out.println("peerId :"+ peerId);
-//      System.out.println("getLastMessage From :"+ conversation.getLastMessage().getFrom());
-//      System.out.println("conversation.getName :"+ conversation.getName());
-
-      // json to map
-      Map<String,Object> content = null;
-      if (conversation.getLastMessage() != null){
-
-        //获取最新消息的时间
-        SimpleDateFormat sdf= new SimpleDateFormat("MM-dd HH:mm");
-        String lastMessageAt = sdf.format(conversation.getLastMessageAt());
-
-        content = JSON.parseObject(conversation.getLastMessage().getContent());
-        System.out.println("content :"+ content);
-
-        Map<String,Object> attrs = (Map<String,Object>)content.get("_lcattrs");
-
-        String peerName = "";
-        //attrs为null表示最后一句话是当前用户说的
-        if (attrs == null || attrs.get("username") == null) {
-          peerName = peerId;
-        }else {
-          peerName = attrs.get("username").toString();
-        }
-        String message = "";
-        Integer messageType = Integer.valueOf(content.get("_lctype").toString());
-        if (messageType == -1){
-          message = content.get("_lctext").toString();
-        }else if(messageType == -2){
-          message = "[图片]";
-        }else if(messageType == -3){
-          message = "[语音]";
-        }else if(messageType == -4){
-          message = "[视频]";
-        }else if(messageType == -5){
-          message = "[位置]";
-        }else if(messageType == -6){
-          message = "[文件]";
-        }else {
-          message ="[暂不支持格式]";
-        }
-        con.put("clientId",clientId);
-        con.put("peerId",peerId);
-        con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
-        con.put("lastMessageAt",lastMessageAt);
-        con.put("peerName",peerName);
-        con.put("lastMessageContent",message);
-
-      }else {
-        con.put("clientId",clientId);
-        con.put("peerId",peerId);
-        con.put("unreadMessagesCount",conversation.getUnreadMessagesCount());
-        con.put("lastMessageAt","");
-        con.put("peerName",peerId);
-        con.put("lastMessageContent","");
-
-      }
-
-      System.out.println("conversation :"+ con);
-
-      conversationList.add(con);
-    }
+    List conversationList = getConverstionList();
     result.success(conversationList);
   }
 
   public void refreshRecentConversationUsers(){
+
+    List conversationList = getConverstionList();
+    if (eventCallback != null){
+      eventCallback.success(conversationList);
+    }
+
+  }
+
+  private List getConverstionList(){
+
     List<String> convIdList = LCIMConversationItemCache.getInstance().getSortedConversationList();
     String clientId =  LCChatKit.getInstance().getClient().getClientId();
-    System.out.println("clientId :"+ clientId);
 
     List conversationList = new ArrayList<>();
+
     for (String convId : convIdList) {
 
       Map<String,Object> con = new HashMap<>();
@@ -302,15 +249,9 @@ public class FlutterLcImPlugin implements MethodCallHandler {
         continue;
       }
 
-      System.out.println("peerId :"+ peerId);
-      System.out.println("conversation :"+ conversation.getLastMessage());
-      System.out.println("conversation :"+ conversation.getLastMessageAt());
-
-//      System.out.println("getLastMessage From :"+ conversation.getLastMessage().getFrom());
-//      System.out.println("conversation.getName :"+ conversation.getName());
-
       // json to map
       Map<String,Object> content = null;
+
       if (conversation.getLastMessage() != null){
 
         //获取最新消息的时间
@@ -323,6 +264,7 @@ public class FlutterLcImPlugin implements MethodCallHandler {
         Map<String,Object> attrs = (Map<String,Object>)content.get("_lcattrs");
 
         String peerName = "";
+
         //attrs为null表示最后一句话是当前用户说的
         if (attrs == null || attrs.get("username") == null) {
           peerName = peerId;
@@ -368,10 +310,7 @@ public class FlutterLcImPlugin implements MethodCallHandler {
 
       conversationList.add(con);
     }
-    if (eventCallback != null){
-      eventCallback.success(conversationList);
-    }
-
+    return conversationList;
   }
 
   void setEventToFlutter (){
