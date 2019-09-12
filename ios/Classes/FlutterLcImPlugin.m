@@ -9,14 +9,23 @@
 
 static BOOL isRegister = false;
 static NSObject<FlutterBinaryMessenger>* messager = nil;
-@interface FlutterLcImPlugin()<UNUserNotificationCenterDelegate,FlutterStreamHandler>
-    
-    @end
+FlutterEventSink conversationEventBlock;
+FlutterEventSink notificationEventBlock;
+
+@interface FlutterLcImPlugin()<FlutterStreamHandler>
+
+@end
 
 @implementation FlutterLcImPlugin
-    
-    
-    
+
++(void)sendNotification:(id)msg{
+    if(notificationEventBlock != nil){
+        if([msg objectForKey:@"data"] != nil){
+            notificationEventBlock([msg objectForKey:@"data"]);
+        }
+        
+    }
+}
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                      methodChannelWithName:@"flutter_lc_im"
@@ -25,7 +34,7 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
     FlutterLcImPlugin* instance = [[FlutterLcImPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
-    
+
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"getPlatformVersion" isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
@@ -35,9 +44,11 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
         if (!isRegister) {
             NSString *appId    = call.arguments[@"app_id"];
             NSString *appKey   = call.arguments[@"app_key"];
+            NSString *url   = call.arguments[@"api"];
             
             [self registerConversationWithAppId:appId
-                                         appKey:appKey];
+                                         appKey:appKey
+                                         apiUrl:url];
             isRegister = true;
         }
         
@@ -58,12 +69,10 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
         result(FlutterMethodNotImplemented);
     }
 }
-    
+
 - (void)registerConversationWithAppId:(NSString *)appId
-                               appKey:(NSString *)appKey{
-    
-    NSLog(@"register conversation");
-    [self registerForRemoteNotification];
+                               appKey:(NSString *)appKey
+                               apiUrl:(NSString *)url{
     
     [LCChatKit setAppId:appId appKey:appKey];
     // 启用未读消息
@@ -74,19 +83,29 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
     [LCCKInputViewPluginPickImage registerSubclass];
     [LCCKInputViewPluginLocation registerSubclass];
     
-}
+    // 配置 SDK 储存
+    [AVOSCloud setServerURLString:url forServiceModule:AVServiceModuleAPI];
+    // 配置 SDK 推送
+    [AVOSCloud setServerURLString:url forServiceModule:AVServiceModulePush];
+    // 配置 SDK 云引擎
+    [AVOSCloud setServerURLString:url forServiceModule:AVServiceModuleEngine];
+    // 配置 SDK 即时通讯
+    [AVOSCloud setServerURLString:url forServiceModule:AVServiceModuleRTM];
     
-    /**
-     * Lean Cloud 获取最近联系的策略：当用户发起聊天时，lc会缓存聊天对象，并在服务器上为聊天对象设置一个有效时间，
-     * 每次获取联系人时，如果联系人还在有效时间内，则从服务器上获取联系人列表，如果联系人已经长时间没有和当前用户聊天则失效，则从本地缓存中获取数据，
-     * 所有聊天对象都会缓存到本地的FMDatabase中。因此，换设备后，只能获取服务器上还没有过期的聊天对象。
-     * 因为是单聊，不是组聊，只要获取到用户的user_id即可，不需要其他数据。
-     */
+    [self setFlutterChannel];
+}
+
+/**
+ * Lean Cloud 获取最近联系的策略：当用户发起聊天时，lc会缓存聊天对象，并在服务器上为聊天对象设置一个有效时间，
+ * 每次获取联系人时，如果联系人还在有效时间内，则从服务器上获取联系人列表，如果联系人已经长时间没有和当前用户聊天则失效，则从本地缓存中获取数据，
+ * 所有聊天对象都会缓存到本地的FMDatabase中。因此，换设备后，只能获取服务器上还没有过期的聊天对象。
+ * 因为是单聊，不是组聊，只要获取到用户的user_id即可，不需要其他数据。
+ */
 - (void)getRecentConversationUsers:(FlutterResult)result{
     
     [self reloadMessage:result];
 }
-    
+
 - (void)reloadMessage:(FlutterResult)result {
     [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
     NSMutableArray *messages = [NSMutableArray array];
@@ -187,7 +206,7 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
     }];
     
 }
-    
+
 - (void)pushMessageToFlutter{
     [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
     NSMutableArray *messages = [NSMutableArray array];
@@ -286,15 +305,15 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
                 
             }
         }];
-        if (eventBlock != nil) {
+        if (conversationEventBlock != nil) {
             NSLog(@"badgeCount :%ld",badgeCount);
             [[UIApplication sharedApplication] setApplicationIconBadgeNumber:badgeCount];
-            eventBlock(messages);
+            conversationEventBlock(messages);
         }
     }];
     
 }
-    
+
 - (void)chatWithUser:(NSDictionary *)userDic peer:(NSDictionary *)peerDic{
     
     LCCKUser *user = [[LCCKUser alloc] initWithUserId:userDic[@"user_id"] name:userDic[@"name"] avatarURL:userDic[@"avatar_url"]];
@@ -308,10 +327,8 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
     [LCChatKitHelper openConversationViewControllerWithPeerId:peer.userId];
     
 }
-    
+
 - (void)loginImWithUserId:(NSString *)userId result:(FlutterResult)result{
-    
-    [self registerForRemoteNotification];
     
     [LCCKUtil showProgressText:@"连接中..." duration:10.0f];
     [LCChatKitHelper invokeThisMethodAfterLoginSuccessWithClientId:userId success:^{
@@ -329,142 +346,51 @@ static NSObject<FlutterBinaryMessenger>* messager = nil;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationMessageUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationUnreadsUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationConversationListDataSourceUpdated object:nil];
-    [self setEventToFlutter];
 }
+
+-(void)setFlutterChannel{
+    [self setConversationEventToFlutter];
+    [self setNotificationEventToFlutter];
     
-- (void)setEventToFlutter {
+}
+- (void)setConversationEventToFlutter {
     
-    NSString *channelName = @"flutter_lc_im_native";
+    NSString *channelName = @"flutter_lc_im/conversation";
     FlutterEventChannel *evenChannal = [FlutterEventChannel eventChannelWithName:channelName binaryMessenger:messager];
     // 代理FlutterStreamHandler
     [evenChannal setStreamHandler:self];
     
     NSLog(@"print log=========================");
 }
+
+- (void)setNotificationEventToFlutter {
     
-    FlutterEventSink eventBlock;
+    NSString *channelName = @"flutter_lc_im/notification";
+    FlutterEventChannel *evenChannal = [FlutterEventChannel eventChannelWithName:channelName binaryMessenger:messager];
+    // 代理FlutterStreamHandler
+    [evenChannal setStreamHandler:self];
     
+    NSLog(@"print log=========================");
+}
+
 - (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
                                        eventSink:(FlutterEventSink)events{
-    if (events) {
-        eventBlock = events;
+    if([arguments isEqual:@"flutter_lc_im/conversation"]){
+        if (events) {
+            conversationEventBlock = events;
+        }
+    }else if ([arguments isEqual:@"flutter_lc_im/notification"]){
+        if (events) {
+            notificationEventBlock = events;
+        }
+        
     }
     return nil;
 }
-    
+
 - (FlutterError* _Nullable)onCancelWithArguments:(id _Nullable)arguments{
     return nil;
 }
-    /**
-     * 初始化UNUserNotificationCenter
-     */
-- (void)registerForRemoteNotification {
-    // iOS 10 兼容
-    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"10.0")) {
-        
-#if XCODE_VERSION_GREATER_THAN_OR_EQUAL_TO_8
-        
-        // 使用 UNUserNotificationCenter 来管理通知
-        UNUserNotificationCenter *uncenter = [UNUserNotificationCenter currentNotificationCenter];
-        // 监听回调事件
-        [uncenter setDelegate:self];
-        //iOS 10 使用以下方法注册，才能得到授权
-        [uncenter requestAuthorizationWithOptions:(UNAuthorizationOptionAlert+UNAuthorizationOptionBadge+UNAuthorizationOptionSound)
-                                completionHandler:^(BOOL granted, NSError * _Nullable error)
-         {
-             dispatch_async(dispatch_get_main_queue(), ^{
-                 [[UIApplication sharedApplication] registerForRemoteNotifications];
-             });
-             //TODO:授权状态改变
-             NSLog(@"%@" , granted ? @"授权成功" : @"授权失败");
-         }];
-        // 获取当前的通知授权状态, UNNotificationSettings
-        [uncenter getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-            
-            NSLog(@"%s\nline:%@\n-----\n%@\n\n", __func__, @(__LINE__), settings);
-            /*
-             UNAuthorizationStatusNotDetermined : 没有做出选择
-             UNAuthorizationStatusDenied : 用户未授权
-             UNAuthorizationStatusAuthorized ：用户已授权
-             */
-            if (settings.authorizationStatus == UNAuthorizationStatusNotDetermined) {
-                NSLog(@"未选择");
-            } else if (settings.authorizationStatus == UNAuthorizationStatusDenied) {
-                NSLog(@"未授权");
-            } else if (settings.authorizationStatus == UNAuthorizationStatusAuthorized) {
-                NSLog(@"已授权");
-            }
-        }];
-        
-#endif
-        
-    }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    else if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
-        UIUserNotificationType types = UIUserNotificationTypeAlert |
-        UIUserNotificationTypeBadge |
-        UIUserNotificationTypeSound;
-        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:types categories:nil];
-        
-        [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
-        [[UIApplication sharedApplication] registerForRemoteNotifications];
-    } else {
-        UIRemoteNotificationType types = UIRemoteNotificationTypeBadge |
-        UIRemoteNotificationTypeAlert |
-        UIRemoteNotificationTypeSound;
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:types];
-    }
-#pragma clang diagnostic pop
-}
-    
-    
-#pragma mark UNUserNotificationCenterDelegate
-#pragma mark - 添加处理 APNs 通知回调方法
-    ///=============================================================================
-    /// @name 添加处理APNs通知回调方法
-    ///=============================================================================
-    
-#pragma mark -
-#pragma mark - UNUserNotificationCenterDelegate Method
-    
-#if XCODE_VERSION_GREATER_THAN_OR_EQUAL_TO_8
-    
-    /**
-     * Required for iOS 10+
-     * 在前台收到推送内容, 执行的方法
-     */
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-       willPresentNotification:(UNNotification *)notification
-         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-    NSDictionary *userInfo = notification.request.content.userInfo;
-    if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
-        //TODO:处理远程推送内容
-        NSLog(@"%@", userInfo);
-    }
-    // 需要执行这个方法，选择是否提醒用户，有 Badge、Sound、Alert 三种类型可以选择设置
-    completionHandler(UNNotificationPresentationOptionAlert);
-}
-    
-    /**
-     * Required for iOS 10+
-     * 在后台和启动之前收到推送内容, 点击推送后执行的方法
-     */
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-didReceiveNotificationResponse:(UNNotificationResponse *)response
-         withCompletionHandler:(void (^)(void))completionHandler
-    {
-        NSDictionary *userInfo = response.notification.request.content.userInfo;
-        if([response.notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
-            //TODO:处理远程推送内容
-            NSLog(@"%@", userInfo);
-        }
-        completionHandler();
-    }
-    
-#endif
-    
-    
-    
-    
-    @end
+
+
+@end

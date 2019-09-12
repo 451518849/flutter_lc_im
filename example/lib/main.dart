@@ -46,7 +46,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     //dYRQ8YfHRiILshUnfFJu2eQM-gzGzoHsz ye24iIK6ys8IvaISMC4Bs5WK
     FlutterLcIm.register(
-        "dYRQ8YfHRiILshUnfFJu2eQM-gzGzoHsz", "ye24iIK6ys8IvaISMC4Bs5WK");
+        "dYRQ8YfHRiILshUnfFJu2eQM-gzGzoHsz", "ye24iIK6ys8IvaISMC4Bs5WK","https://avoscloud.com");
     FlutterLcIm.login("6");
     return Scaffold(
       appBar: AppBar(

@@ -156,7 +156,9 @@ public class LCIMConversationActivity extends AppCompatActivity {
 
   @Override
   protected void onDestroy() {
-    flutterImCallback.refreshMessage("conversation activity is close");
+    if (flutterImCallback != null){
+      flutterImCallback.refreshMessage("conversation activity is close");
+    }
     super.onDestroy();
   }
 }

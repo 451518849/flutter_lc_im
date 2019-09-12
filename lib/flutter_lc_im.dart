@@ -11,10 +11,11 @@ class FlutterLcIm {
   }
 
   static Future<dynamic> register(
-      String appId, String appKey) async {
+      String appId, String appKey,String api) async {
     var result = await _channel.invokeMethod('register', {
       'app_id': appId,
       'app_key': appKey,
+      'api': api,
     });
     return result;
   }

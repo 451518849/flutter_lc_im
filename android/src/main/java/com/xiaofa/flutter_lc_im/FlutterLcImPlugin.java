@@ -38,9 +38,7 @@ import cn.leancloud.chatkit.cache.LCIMConversationItemCache;
 import cn.leancloud.chatkit.handler.LCIMMessageHandler;
 import cn.leancloud.chatkit.utils.LCIMConstants;
 
-import cn.leancloud.chatkit.LCChatKit;
-import cn.leancloud.chatkit.utils.LCIMLogUtils;
-import cn.leancloud.chatkit.utils.LCIMNotificationUtils;
+
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
@@ -64,6 +62,7 @@ public class FlutterLcImPlugin implements MethodCallHandler {
   private Activity activity;
   static BinaryMessenger messenger;
   static EventChannel.EventSink eventCallback;
+  public static EventChannel.EventSink notificationCallback;
 
   private FlutterLcImPlugin(Registrar registrar){
     context = registrar.context();
@@ -89,7 +88,9 @@ public class FlutterLcImPlugin implements MethodCallHandler {
         if (!isRegister){
           String appId = call.argument("app_id");
           String appKey = call.argument("app_key");
-          this.initSetting(appId,appKey,result);
+          String api = call.argument("api");
+
+          this.initSetting(appId,appKey,api,result);
           isRegister = true;
         } else
         {
@@ -118,11 +119,21 @@ public class FlutterLcImPlugin implements MethodCallHandler {
  /*
  *  开启聊天
  * */
-  private void initSetting(String appId, String appKey, final Result result){
+  private void initSetting(String appId, String appKey, String api,final Result result){
+
+    AVOSCloud.setServer(AVOSCloud.SERVER_TYPE.API, api);
+    // 配置 SDK 云引擎（用于访问云函数，使用 API 自定义域名，而非云引擎自定义域名）
+    AVOSCloud.setServer(AVOSCloud.SERVER_TYPE.ENGINE, api);
+    // 配置 SDK 推送
+    AVOSCloud.setServer(AVOSCloud.SERVER_TYPE.PUSH, api);
+    // 配置 SDK 即时通讯
+    AVOSCloud.setServer(AVOSCloud.SERVER_TYPE.RTM, api);
 
     LCChatKit.getInstance().init(context, appId, appKey);
     AVIMClient.setAutoOpen(true);
     AVIMClient.setUnreadNotificationEnabled(true);
+
+    initFlutterChannel();
 
   }
 /*
@@ -134,15 +145,15 @@ public class FlutterLcImPlugin implements MethodCallHandler {
 
    initChatService(userId,result);
 
-    initFlutterChannel();
   }
 
   private void initPushService(String userId, final Result result){
 
     PushService.setAutoWakeUp(true);
-    PushService.setDefaultPushCallback(context,activity.getClass());
-    PushService.setDefaultChannelId(context, "default");//这个channel和订阅的chanenl不一样，只能为default
+    PushService.setDefaultChannelId(context, "default");//这个channel和订阅的channel不一样，只能为default
     PushService.subscribe(context,userId,activity.getClass()); //订阅频道,这一步必须，否则无法收到推送
+    PushService.setDefaultPushCallback(context,activity.getClass());
+    AVOSCloud.setDebugLogEnabled(true);
 
     //每次登录后设置推送
     AVIMMessageManager.registerMessageHandler(AVIMTypedMessage.class,new CustomMessageHandler(context));
@@ -173,6 +184,8 @@ public class FlutterLcImPlugin implements MethodCallHandler {
         }
       }
     });
+
+    LCChatKit.getInstance().setProfileProvider(CustomUserProvider.getInstance());
   }
 
 
@@ -180,8 +193,11 @@ public class FlutterLcImPlugin implements MethodCallHandler {
   * 初始化flutter和android之间的信道
   * */
   private void initFlutterChannel(){
+
     //native to flutter by channel flutter_lc_im_native
-    setEventToFlutter();
+    setConversationEventToFlutter();
+    //
+    setNotificationEventToFlutter();
 
     flutterImCallback = new FlutterLcImPlugin.FlutterImCallback(){
 
@@ -190,6 +206,7 @@ public class FlutterLcImPlugin implements MethodCallHandler {
         System.out.println(msg);
         refreshRecentConversationUsers();
       }
+
     };
   }
 
@@ -200,7 +217,7 @@ public class FlutterLcImPlugin implements MethodCallHandler {
     users.add(peer);
     CustomUserProvider.getInstance().setAllUsers(users);
     LCChatKit.getInstance().setProfileProvider(CustomUserProvider.getInstance());
-    AVOSCloud.setDebugLogEnabled(true);
+//    AVOSCloud.setDebugLogEnabled(true); //不开启调试模式
 
     LCIMConversationActivity.flutterImCallback = flutterImCallback;
 
@@ -313,15 +330,36 @@ public class FlutterLcImPlugin implements MethodCallHandler {
     return conversationList;
   }
 
-  void setEventToFlutter (){
+  void setConversationEventToFlutter (){
 
-    new EventChannel(messenger, "flutter_lc_im_native").setStreamHandler(
+    new EventChannel(messenger, "flutter_lc_im/conversation").setStreamHandler(
             new EventChannel.StreamHandler() {
               @Override
               // 这个onListen是Flutter端开始监听这个channel时的回调，第二个参数 EventSink是用来传数据的载体。
               public void onListen(Object arguments, EventChannel.EventSink events) {
                 if (events != null){
                   eventCallback = events;
+                }
+              }
+
+              @Override
+              public void onCancel(Object arguments) {
+                // 对面不再接收
+
+              }
+            }
+    );
+  }
+
+  void setNotificationEventToFlutter (){
+
+    new EventChannel(messenger, "flutter_lc_im/notification").setStreamHandler(
+            new EventChannel.StreamHandler() {
+              @Override
+              // 这个onListen是Flutter端开始监听这个channel时的回调，第二个参数 EventSink是用来传数据的载体。
+              public void onListen(Object arguments, EventChannel.EventSink events) {
+                if (events != null){
+                  notificationCallback = events;
                 }
               }
 

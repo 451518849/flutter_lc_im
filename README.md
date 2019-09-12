@@ -5,7 +5,7 @@
 
 
 **简单封装了LeanCloud的即时通讯功能（iOS/Android），给出了单聊和获取最近联系人列表。其中单聊功能使用的是原生实现，只是封装了一层跳转。而最近联系人列表则是使用Flutter重绘实现的。因此，最近联系人列表可以根据自己的需要定制界面。框架地址：
-[flutter_lc_im 0.2.1](https://pub.dev/packages/flutter_lc_im#-readme-tab-)**
+[flutter_lc_im 0.2.2](https://pub.dev/packages/flutter_lc_im#-readme-tab-)**
 
 ### 封装的功能有
 
@@ -20,13 +20,13 @@
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^0.2.1
+		flutter_lc_im: ^0.2.2
 		  
 	flutter packages get
 
 ### Flutter中的实现如下：
 		 
-        FlutterLcIm.register("appId", "appKey");
+        FlutterLcIm.register("appId", "appKey"，"api");
         FlutterLcIm.login("当前用户的userId");
         Map user = {'name':'jason1','user_id':"1",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
         Map peer = {'name':'jason2','user_id':"3",'avatar_url':"http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100"};
@@ -148,7 +148,7 @@ FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，
 	}
 
 #### 第三步 Flutter项目中加入以下代码：
-        FlutterLcIm.register("appId", "Appkey"); //main.dart
+        FlutterLcIm.register("appId", "Appkey","api"); //main.dart
         FlutterLcIm.login("当前用户的userId");    
         FlutterLcIm.pushToConversationView(user,peer);
         
