@@ -22,8 +22,11 @@ FlutterEventSink notificationEventBlock;
     if(notificationEventBlock != nil){
         if([msg objectForKey:@"data"] != nil){
             notificationEventBlock([msg objectForKey:@"data"]);
+        }else {
+            [[LCChatKit sharedInstance] didReceiveRemoteNotification:msg];
         }
-        
+    }else {
+        [[LCChatKit sharedInstance] didReceiveRemoteNotification:msg];
     }
 }
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -107,211 +110,135 @@ FlutterEventSink notificationEventBlock;
 }
 
 - (void)reloadMessage:(FlutterResult)result {
-    [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
-    NSMutableArray *messages = [NSMutableArray array];
-    __block NSUInteger badgeCount = 0;
+    
+    __weak __typeof(self) weakSelf = self;
     
     [[LCCKConversationListService sharedInstance] findRecentConversationsWithBlock:^(NSArray *conversations, NSInteger totalUnreadCount, NSError *error) {
-        NSLog(@"totalUnreadCount :%ld",totalUnreadCount);
         
-        [conversations enumerateObjectsUsingBlock:^(AVIMConversation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSString *peerId = @"";
-            if (obj.members.count == 2) {
-                if (obj.members[0] == obj.clientId){
-                    peerId = obj.members[1];
-                }else {
-                    peerId = obj.members[0];
-                }
-                
-                NSString *text = @"";
-                if (obj.lastMessage.content == nil) {
-                    if (obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeText) {
-                        text = obj.lcck_lastMessage.text;
-                    } else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeImage){
-                        text = @"[图片]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeAudio){
-                        text = @"[语音]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeVideo){
-                        text = @"[视频]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeLocation){
-                        text = @"[位置]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeFile){
-                        text = @"[文件]";
-                    }else {
-                        text =@"[暂不支持格式]";
-                    }
-                    NSDictionary *message = @{
-                                              @"clientId":obj.clientId,
-                                              @"peerId":peerId,
-                                              @"unreadMessagesCount":@(0),
-                                              @"lastMessageAt":[NSDate timeInfoWithDate:obj.lcck_lastMessageAt],
-                                              @"peerName":obj.lcck_displayName,
-                                              @"lastMessageContent":text,
-                                              };
-                    [messages addObject:message];
-                    return;
-                } else {
-                    NSData *jsonData = [obj.lastMessage.content dataUsingEncoding:NSUTF8StringEncoding];
-                    NSDictionary *content = [NSJSONSerialization JSONObjectWithData:jsonData
-                                                                            options:NSJSONReadingMutableContainers
-                                                                              error:nil];
-                    NSLog(@"content:%@",content);
-                    /**
-                     *
-                     kAVIMMessageMediaTypeNone = 0,
-                     kAVIMMessageMediaTypeText = -1,
-                     kAVIMMessageMediaTypeImage = -2,
-                     kAVIMMessageMediaTypeAudio = -3,
-                     kAVIMMessageMediaTypeVideo = -4,
-                     kAVIMMessageMediaTypeLocation = -5,
-                     kAVIMMessageMediaTypeFile = -6,
-                     kAVIMMessageMediaTypeRecalled = -127
-                     */
-                    
-                    if ([content[@"_lctype"] isEqual:@(-1)]) {
-                        text = content[@"_lctext"];
-                    } else if([content[@"_lctype"] isEqual:@(-2)]){
-                        text = @"[图片]";
-                    } else if([content[@"_lctype"] isEqual:@(-3)]){
-                        text = @"[语音]";
-                    } else if([content[@"_lctype"] isEqual:@(-4)]){
-                        text = @"[视频]";
-                    } else if([content[@"_lctype"] isEqual:@(-5)]){
-                        text = @"[位置]";
-                    }else if([content[@"_lctype"] isEqual:@(-6)]){
-                        text = @"[文件]";
-                    }else {
-                        text =@"[暂不支持格式]";
-                    }
-                    
-                    badgeCount += obj.unreadMessagesCount;
-                    
-                    NSDictionary *message = @{
-                                              @"clientId":obj.clientId,
-                                              @"peerId":peerId,
-                                              @"unreadMessagesCount":@(obj.unreadMessagesCount),
-                                              @"lastMessageAt":[NSDate timeInfoWithDate:obj.lastMessageAt],
-                                              @"lastMessageContent":text,
-                                              };
-                    [messages addObject:message];
-                    
-                }
-                
-            }
-        }];
-        NSLog(@"recent conversation users:%@",messages);
-        NSLog(@"badgeCount :%ld",badgeCount);
-        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:badgeCount];
-        result(messages);
+        [weakSelf handleRecentMessage:conversations result:result];
     }];
     
 }
 
 - (void)pushMessageToFlutter{
-    [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
-    NSMutableArray *messages = [NSMutableArray array];
-    __block NSUInteger badgeCount = 0;
+    
+    
+    __weak __typeof(self) weakSelf = self;
+    
     [[LCCKConversationListService sharedInstance] findRecentConversationsWithBlock:^(NSArray *conversations, NSInteger totalUnreadCount, NSError *error) {
         
-        NSLog(@"totalUnreadCount :%ld",totalUnreadCount);
+        [weakSelf handleRecentMessage:conversations result:nil];
         
-        [conversations enumerateObjectsUsingBlock:^(AVIMConversation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSString *peerId = @"";
-            if (obj.members.count == 2) {
-                if (obj.members[0] == obj.clientId){
-                    peerId = obj.members[1];
+    }];
+    
+}
+
+- (void)handleRecentMessage:(NSArray *) conversations result:(FlutterResult)result{
+    
+    NSMutableArray *messages = [NSMutableArray array];
+    __block NSUInteger badgeCount = 0;
+    
+    [conversations enumerateObjectsUsingBlock:^(AVIMConversation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *peerId = @"";
+        if (obj.members.count == 2) {
+            if (obj.members[0] == obj.clientId){
+                peerId = obj.members[1];
+            }else {
+                peerId = obj.members[0];
+            }
+            
+            //            NSLog(@"obj.members:%@",obj.members);
+            //            NSLog(@"conversation name :%@",obj.name);
+            //            NSLog(@"conversation attributes :%@",obj.attributes);
+            //
+            NSString *text = @"";
+            if (obj.lastMessage.content == nil) {
+                if (obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeText) {
+                    text = obj.lcck_lastMessage.text;
+                } else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeImage){
+                    text = @"[图片]";
+                }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeAudio){
+                    text = @"[语音]";
+                }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeVideo){
+                    text = @"[视频]";
+                }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeLocation){
+                    text = @"[位置]";
+                }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeFile){
+                    text = @"[文件]";
                 }else {
-                    peerId = obj.members[0];
+                    text =@"[暂不支持格式]";
                 }
                 
-                NSLog(@"obj.members:%@",obj.members);
-                NSLog(@"conversation name :%@",obj.name);
-                NSLog(@"conversation attributes :%@",obj.attributes);
-                
-                NSString *text = @"";
-                if (obj.lastMessage.content == nil) {
-                    if (obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeText) {
-                        text = obj.lcck_lastMessage.text;
-                    } else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeImage){
-                        text = @"[图片]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeAudio){
-                        text = @"[语音]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeVideo){
-                        text = @"[视频]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeLocation){
-                        text = @"[位置]";
-                    }else if(obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeFile){
-                        text = @"[文件]";
-                    }else {
-                        text =@"[暂不支持格式]";
-                    }
-                    
-                    NSDictionary *message = @{
-                                              @"clientId":obj.clientId,
-                                              @"peerId":peerId,
-                                              @"unreadMessagesCount":@(0),
-                                              @"lastMessageAt":[NSDate timeInfoWithDate:obj.lcck_lastMessageAt],
-                                              @"peerName":obj.lcck_displayName,
-                                              @"lastMessageContent":text,
-                                              };
-                    [messages addObject:message];
+                NSDictionary *message = @{
+                                          @"clientId":obj.clientId,
+                                          @"peerId":peerId,
+                                          @"unreadMessagesCount":@(0),
+                                          @"lastMessageAt":[NSDate timeInfoWithDate:obj.lcck_lastMessageAt],
+                                          @"peerName":obj.lcck_displayName,
+                                          @"lastMessageContent":text,
+                                          };
+                [messages addObject:message];
+                return;
+            } else {
+                NSData *jsonData = [obj.lastMessage.content dataUsingEncoding:NSUTF8StringEncoding];
+                NSDictionary *content = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                                        options:NSJSONReadingMutableContainers
+                                                                          error:nil];
+                NSLog(@"content:%@",content);
+                /**
+                 *
+                 kAVIMMessageMediaTypeNone = 0,
+                 kAVIMMessageMediaTypeText = -1,
+                 kAVIMMessageMediaTypeImage = -2,
+                 kAVIMMessageMediaTypeAudio = -3,
+                 kAVIMMessageMediaTypeVideo = -4,
+                 kAVIMMessageMediaTypeLocation = -5,
+                 kAVIMMessageMediaTypeFile = -6,
+                 kAVIMMessageMediaTypeRecalled = -127
+                 */
+                if ([content[@"_lctype"] isEqual:@(0)]) {
                     return;
-                } else {
-                    NSData *jsonData = [obj.lastMessage.content dataUsingEncoding:NSUTF8StringEncoding];
-                    NSDictionary *content = [NSJSONSerialization JSONObjectWithData:jsonData
-                                                                            options:NSJSONReadingMutableContainers
-                                                                              error:nil];
-                    NSLog(@"content:%@",content);
-                    /**
-                     *
-                     kAVIMMessageMediaTypeNone = 0,
-                     kAVIMMessageMediaTypeText = -1,
-                     kAVIMMessageMediaTypeImage = -2,
-                     kAVIMMessageMediaTypeAudio = -3,
-                     kAVIMMessageMediaTypeVideo = -4,
-                     kAVIMMessageMediaTypeLocation = -5,
-                     kAVIMMessageMediaTypeFile = -6,
-                     kAVIMMessageMediaTypeRecalled = -127
-                     */
-                    if ([content[@"_lctype"] isEqual:@(0)]) {
-                        return;
-                    } else if ([content[@"_lctype"] isEqual:@(-1)]) {
-                        text = content[@"_lctext"];
-                    } else if([content[@"_lctype"] isEqual:@(-2)]){
-                        text = @"[图片]";
-                    } else if([content[@"_lctype"] isEqual:@(-3)]){
-                        text = @"[语音]";
-                    } else if([content[@"_lctype"] isEqual:@(-4)]){
-                        text = @"[视频]";
-                    } else if([content[@"_lctype"] isEqual:@(-5)]){
-                        text = @"[位置]";
-                    }else if([content[@"_lctype"] isEqual:@(-6)]){
-                        text = @"[文件]";
-                    }else {
-                        text =@"[暂不支持格式]";
-                    }
-                    NSLog(@"obj.unreadMessagesCount:%ld",obj.unreadMessagesCount);
-                    badgeCount += obj.unreadMessagesCount;
-                    NSDictionary *message = @{
-                                              @"clientId":obj.clientId,
-                                              @"peerId":peerId,
-                                              @"unreadMessagesCount":@(obj.unreadMessagesCount),
-                                              @"lastMessageAt":[NSDate timeInfoWithDate:obj.lastMessageAt],
-                                              @"lastMessageContent":text,
-                                              };
-                    [messages addObject:message];
-                    
+                } else if ([content[@"_lctype"] isEqual:@(-1)]) {
+                    text = content[@"_lctext"];
+                } else if([content[@"_lctype"] isEqual:@(-2)]){
+                    text = @"[图片]";
+                } else if([content[@"_lctype"] isEqual:@(-3)]){
+                    text = @"[语音]";
+                } else if([content[@"_lctype"] isEqual:@(-4)]){
+                    text = @"[视频]";
+                } else if([content[@"_lctype"] isEqual:@(-5)]){
+                    text = @"[位置]";
+                }else if([content[@"_lctype"] isEqual:@(-6)]){
+                    text = @"[文件]";
+                }else {
+                    text =@"[暂不支持格式]";
                 }
+                NSLog(@"obj.unreadMessagesCount:%ld",obj.unreadMessagesCount);
+                badgeCount += obj.unreadMessagesCount;
+                NSDictionary *message = @{
+                                          @"clientId":obj.clientId,
+                                          @"peerId":peerId,
+                                          @"unreadMessagesCount":@(obj.unreadMessagesCount),
+                                          @"lastMessageAt":[NSDate timeInfoWithDate:obj.lastMessageAt],
+                                          @"lastMessageContent":text,
+                                          };
+                [messages addObject:message];
                 
             }
-        }];
-        if (conversationEventBlock != nil) {
-            NSLog(@"badgeCount :%ld",badgeCount);
-            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:badgeCount];
-            conversationEventBlock(messages);
+            
         }
     }];
     
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:badgeCount];
+    
+    if(result != nil){
+        result(messages);
+    }
+    
+    if (conversationEventBlock != nil) {
+        NSLog(@"conversationEventBlock");
+        conversationEventBlock(messages);
+    }
 }
 
 - (void)chatWithUser:(NSDictionary *)userDic peer:(NSDictionary *)peerDic{
@@ -342,6 +269,8 @@ FlutterEventSink notificationEventBlock;
         result(@"login error");
     }];
     
+    [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationMessageReceived object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationMessageUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationUnreadsUpdated object:nil];
@@ -357,20 +286,16 @@ FlutterEventSink notificationEventBlock;
     
     NSString *channelName = @"flutter_lc_im/conversation";
     FlutterEventChannel *evenChannal = [FlutterEventChannel eventChannelWithName:channelName binaryMessenger:messager];
-    // 代理FlutterStreamHandler
     [evenChannal setStreamHandler:self];
     
-    NSLog(@"print log=========================");
 }
 
 - (void)setNotificationEventToFlutter {
     
     NSString *channelName = @"flutter_lc_im/notification";
     FlutterEventChannel *evenChannal = [FlutterEventChannel eventChannelWithName:channelName binaryMessenger:messager];
-    // 代理FlutterStreamHandler
     [evenChannal setStreamHandler:self];
     
-    NSLog(@"print log=========================");
 }
 
 - (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
