@@ -160,3 +160,5 @@ FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext context) => ConversationListPage(conversations: conversations,)));
           }
+### QQ技术交流：
+群聊号：853797155，欢迎交流问题和技术！
