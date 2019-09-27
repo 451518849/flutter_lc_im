@@ -20,7 +20,7 @@
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^0.2.2
+		flutter_lc_im: ^0.2.3
 		  
 	flutter packages get
 
