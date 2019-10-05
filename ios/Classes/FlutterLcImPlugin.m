@@ -147,10 +147,6 @@ FlutterEventSink notificationEventBlock;
                 peerId = obj.members[0];
             }
             
-            //            NSLog(@"obj.members:%@",obj.members);
-            //            NSLog(@"conversation name :%@",obj.name);
-            //            NSLog(@"conversation attributes :%@",obj.attributes);
-            //
             NSString *text = @"";
             if (obj.lastMessage.content == nil) {
                 if (obj.lcck_lastMessage.mediaType == kAVIMMessageMediaTypeText) {
@@ -272,9 +268,9 @@ FlutterEventSink notificationEventBlock;
     [[LCChatKitHelper sharedInstance] lcck_settingWithUsers:@[]];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationMessageReceived object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationMessageUpdated object:nil];
+    //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationMessageUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationUnreadsUpdated object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationConversationListDataSourceUpdated object:nil];
+    //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushMessageToFlutter) name:LCCKNotificationConversationListDataSourceUpdated object:nil];
 }
 
 -(void)setFlutterChannel{
