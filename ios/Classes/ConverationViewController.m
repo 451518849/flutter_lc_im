@@ -22,11 +22,13 @@
     [super viewWillAppear:animated];
     self.navigationController.navigationBar.barTintColor = [UIColor colorWithRed:253/255.0 green:216/255.0 blue:44/255.0 alpha:1];
     UIButton *leftCustomButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35)];
-    [leftCustomButton setBackgroundImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    UIImage *leftImage = [UIImage imageNamed:@"back" inBundle:bundle compatibleWithTraitCollection:nil];
+    [leftCustomButton setBackgroundImage:leftImage forState:UIControlStateNormal];
     [leftCustomButton addTarget:self action:@selector(back) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:leftCustomButton];
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
-
+    
 }
 
 
