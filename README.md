@@ -1,4 +1,9 @@
 # flutter_lc_im
+![](https://img.shields.io/badge/build-passing-brightgreen)
+![](https://img.shields.io/badge/version-0.2.3-orange)
+![](https://img.shields.io/badge/platform-ios%7Candroid-lightgrey)
+![](https://img.shields.io/badge/license-MIT-blue)
+
 
 ![](index.jpeg)
 ![](list.jpeg)
