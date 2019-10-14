@@ -1,8 +1,11 @@
 package com.xiaofa.flutter_lc_im;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.app.Activity;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
@@ -135,6 +138,7 @@ public class FlutterLcImPlugin implements MethodCallHandler {
 
     initFlutterChannel();
 
+    getPermission();
   }
 /*
 *  初始化推送和聊天信息
@@ -370,5 +374,21 @@ public class FlutterLcImPlugin implements MethodCallHandler {
               }
             }
     );
+  }
+
+  void getPermission(){
+
+    if (Build.VERSION.SDK_INT >= 23) {
+      int REQUEST_CODE_CONTACT = 101;
+      String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+      //验证是否许可权限
+      for (String str : permissions) {
+        if (activity.checkSelfPermission(str) != PackageManager.PERMISSION_GRANTED) {
+          //申请权限
+          activity.requestPermissions(permissions, REQUEST_CODE_CONTACT);
+          return;
+        }
+      }
+    }
   }
 }

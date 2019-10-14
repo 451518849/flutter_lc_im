@@ -1,6 +1,6 @@
 # flutter_lc_im
 ![](https://img.shields.io/badge/build-passing-brightgreen)
-![](https://img.shields.io/badge/version-0.2.4+1-orange)
+![](https://img.shields.io/badge/version-0.2.5-orange)
 ![](https://img.shields.io/badge/platform-ios%7Candroid-lightgrey)
 ![](https://img.shields.io/badge/license-MIT-blue)
 
@@ -10,7 +10,7 @@
 
 
 **简单封装了LeanCloud的即时通讯功能（iOS/Android），给出了单聊和获取最近联系人列表。其中单聊功能使用的是原生实现，只是封装了一层跳转。而最近联系人列表则是使用Flutter重绘实现的。因此，最近联系人列表可以根据自己的需要定制界面。框架地址：
-[flutter_lc_im 0.2.4+1](https://pub.dev/packages/flutter_lc_im#-readme-tab-)**
+[flutter_lc_im 0.2.5](https://pub.dev/packages/flutter_lc_im#-readme-tab-)**
 
 ### 封装的功能有
 
@@ -25,7 +25,7 @@
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^0.2.4+1
+		flutter_lc_im: ^0.2.5
 		  
 	flutter packages get
 

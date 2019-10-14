@@ -1,3 +1,8 @@
+## 0.2.5
+#### 1. android自定义FileProvider，避免与其他框架冲突
+#### 2. android修复小米等设备无法发图的问题
+
+
 ## 0.2.4+1
 #### 1.android加回FileProvider，否则无法发图
 

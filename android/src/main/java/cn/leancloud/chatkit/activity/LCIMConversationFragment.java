@@ -572,6 +572,9 @@ public class LCIMConversationFragment extends Fragment {
    * @param message
    */
   public void sendMessage(AVIMMessage message, boolean addToList) {
+    System.out.println("发送消息："+ message.getContent());
+    System.out.println("addToList："+ addToList);
+
     if (addToList) {
       itemAdapter.addMessage(message);
     }
@@ -596,9 +599,10 @@ public class LCIMConversationFragment extends Fragment {
         if (null != e) {
           LCIMLogUtils.logException(e);
         }
+        //消息上传后的回调，自己写的，sdk中没有。
+        fetchMessages();
       }
     });
-    fetchMessages();
   }
 
   private boolean filterException(Exception e) {
