@@ -1,3 +1,6 @@
+## 0.2.4+1
+#### 1.android加回FileProvider，否则无法发图
+
 ## 0.2.4
 #### 1.修复iOS端聊天界面无返回按钮的问题
 #### 2.android去掉FileProvider
