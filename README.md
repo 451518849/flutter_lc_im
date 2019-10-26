@@ -32,7 +32,7 @@ Add this to your package's pubspec.yaml file:
 
 ### Flutter中的实现如下：
 
-####1. 单聊功能
+#### 1. 单聊功能
 
         FlutterLcIm.register("appId", "appKey"，"api");
         FlutterLcIm.login("当前用户的userId");
@@ -42,7 +42,7 @@ Add this to your package's pubspec.yaml file:
         FlutterLcIm.pushToConversationView(user,peer);
         
         
-####2. 获取聊天列表功能
+#### 2. 获取聊天列表功能
         
         // 第一步需要实现一下channel
 	     EventChannel eventChannel = const EventChannel('flutter_lc_im/conversation');
@@ -64,7 +64,7 @@ Add this to your package's pubspec.yaml file:
           }        
 FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，第二个参数peer是聊天对象.
 
-####3. 推送点击跳转
+#### 3. 推送点击跳转
 
     //高级功能，请选择性使用
 	//点击消息进行跳转，
