@@ -65,6 +65,7 @@ Add this to your package's pubspec.yaml file:
 FlutterLcIm.pushToConversationView中第一个参数user指的是当前用户，第二个参数peer是聊天对象.
 
 ####3. 推送点击跳转
+
     //高级功能，请选择性使用
 	//点击消息进行跳转，
 	typedef NotificationCallback = void Function(Map<String, dynamic> msg);
