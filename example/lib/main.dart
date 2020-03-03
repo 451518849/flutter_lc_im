@@ -22,8 +22,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    FlutterLcIm.register("uAsHYp2qXIhJ6SYB88ehVXCr-gzGzoHsz",
-        "5HdoMlbpmaKDfs7H4blpdLVf", "https://leancloud.findxz.com");
+    FlutterLcIm.register("-gzGzoHsz",
+        "key", "https://leancloud.xxxx.com");
     FlutterLcIm.login("1");
   }
 
@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> {
         // List<ImConversation> conversations = List();
         // ImConversation conversation1 = ImConversation(
         //     clientId: "6",
-        //     peerName: '学长',
+        //     peerName: '测试1',
         //     peerId: '1050',
         //     lastMessage: ImMessage(text: '你好的方式发顺丰'),
         //     lastMessageAt: '2020-2-27',
@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> {
         //         'http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100');
         // ImConversation conversation2 = ImConversation(
         //     clientId: "6",
-        //     peerName: '学长',
+        //     peerName: '测试2',
         //     peerId: '1050',
         //     lastMessage: ImMessage(text: '你好的方式发顺丰'),
         //     lastMessageAt: '2020-2-27',
