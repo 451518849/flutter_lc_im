@@ -4,6 +4,10 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.leancloud.AVFile;
 import cn.leancloud.AVLogger;
 import cn.leancloud.AVOSCloud;
 import cn.leancloud.im.v2.AVIMClient;
@@ -19,12 +24,16 @@ import cn.leancloud.im.v2.AVIMConversationsQuery;
 import cn.leancloud.im.v2.AVIMException;
 import cn.leancloud.im.v2.AVIMMessage;
 import cn.leancloud.im.v2.AVIMMessageManager;
+import cn.leancloud.im.v2.annotation.AVIMMessageType;
 import cn.leancloud.im.v2.callback.AVIMClientCallback;
 import cn.leancloud.im.v2.callback.AVIMConversationCallback;
 import cn.leancloud.im.v2.callback.AVIMConversationCreatedCallback;
 import cn.leancloud.im.v2.callback.AVIMConversationQueryCallback;
 import cn.leancloud.im.v2.callback.AVIMMessagesQueryCallback;
+import cn.leancloud.im.v2.messages.AVIMAudioMessage;
+import cn.leancloud.im.v2.messages.AVIMImageMessage;
 import cn.leancloud.im.v2.messages.AVIMTextMessage;
+import cn.leancloud.im.v2.messages.AVIMVideoMessage;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
@@ -120,7 +129,10 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
       case "sendMessage":
 
         String text = call.argument("text");
-        this.sendMessage(text);
+        byte[] bytes = call.argument("file");
+        int messageType = call.argument("messageType");
+
+        this.sendMessage(text,bytes,messageType);
         break;
 
       case "queryHistoryConversations":
@@ -214,6 +226,20 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
             });
   }
 
+  private void sendMessage(String text,byte[] file,int messageType){
+
+
+    if (messageType == AVIMMessageType.TEXT_MESSAGE_TYPE) {
+        this.sendMessage(text);
+    }else if(messageType == AVIMMessageType.IMAGE_MESSAGE_TYPE){
+        this.sendImageMessage(text,file);
+    }else if(messageType == AVIMMessageType.AUDIO_MESSAGE_TYPE){
+        this.sendAudioMessage(text,file);
+    }else if(messageType == AVIMMessageType.VIDEO_MESSAGE_TYPE){
+        this.sendVideoMessage(text,file);
+    }
+  }
+
   private void sendMessage(String text){
 
     AVIMTextMessage msg = new AVIMTextMessage();
@@ -229,6 +255,59 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
       }
     });
   }
+
+  private void sendImageMessage(String text,byte[] image){
+
+    AVFile file = new AVFile("image",image);
+    AVIMImageMessage msg = new AVIMImageMessage(file);
+    msg.setText(text);
+
+    conversation.sendMessage(msg, new AVIMConversationCallback() {
+      @Override
+      public void done(AVIMException e) {
+        if (e == null) {
+          System.out.println("消息发送成功");
+
+        }
+      }
+    });
+  }
+
+  private void sendAudioMessage(String text,byte[] audio){
+
+    AVFile file = new AVFile("audio",audio);
+    AVIMAudioMessage msg = new AVIMAudioMessage(file);
+    msg.setText(text);
+
+    conversation.sendMessage(msg, new AVIMConversationCallback() {
+      @Override
+      public void done(AVIMException e) {
+        if (e == null) {
+          System.out.println("消息发送成功");
+
+        }
+      }
+    });
+  }
+
+  private void sendVideoMessage(String text,byte[] video){
+
+    AVFile file = new AVFile("video",video);
+    AVIMVideoMessage msg = new AVIMVideoMessage(file);
+    msg.setText(text);
+
+    conversation.sendMessage(msg, new AVIMConversationCallback() {
+      @Override
+      public void done(AVIMException e) {
+        if (e == null) {
+          System.out.println("消息发送成功");
+
+        }
+      }
+    });
+  }
+
+
 
   private void queryHistoryConversationMessages(int limit, String messageId, long timestamp) {
 

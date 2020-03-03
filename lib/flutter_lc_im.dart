@@ -44,8 +44,10 @@ class FlutterLcIm {
     return result;
   }
 
-  static Future<dynamic> sendMessage(String text) async {
-    var result = await _channel.invokeMethod('sendMessage', {'text': text});
+  static Future<dynamic> sendMessage(
+      String text, String filePath, int messageType) async {
+    var result = await _channel.invokeMethod('sendMessage',
+        {'text': text, "filePath": filePath, "messageType": messageType});
     return result;
   }
 

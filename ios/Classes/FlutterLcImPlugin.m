@@ -82,8 +82,12 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         
     }else if([@"sendMessage" isEqualToString:call.method]){
         
-        NSString *text = call.arguments[@"text"];
-        [self sendMessage:text];
+        NSString *text  = call.arguments[@"text"];
+        Byte bytes      = [call.arguments[@"file"] readByte];
+        NSData *data    = [NSData dataWithBytes:&bytes length:sizeof(bytes)];
+        int messageType = [call.arguments[@"messageType"] intValue];
+
+        [self sendMessage:text file:data messageType:messageType];
 
     }else if([@"queryHistoryConversationMessages" isEqualToString:call.method]){
         
@@ -174,7 +178,23 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
 }
 
 /**
-  发送消息（暂时支持文本）
+  发送消息
+ */
+- (void)sendMessage:(NSString *)text file:(NSData *)data messageType:(int)messageType{
+    
+    if (messageType == kAVIMMessageMediaTypeText) {
+        [self sendMessage:text];
+    }else if(messageType == kAVIMMessageMediaTypeImage){
+        [self sendMessage:text image:data];
+    }else if(messageType == kAVIMMessageMediaTypeAudio){
+        [self sendMessage:text audio:data];
+    }else if(messageType == kAVIMMessageMediaTypeVideo){
+        [self sendMessage:text video:data];
+    }
+}
+
+/**
+  发送文本消息
  */
 - (void)sendMessage:(NSString *)text{
     AVIMTextMessage *message = [AVIMTextMessage messageWithText:text attributes:nil];
@@ -185,6 +205,57 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
       }
     }];
 }
+
+/**
+  发送图片消息
+ */
+- (void)sendMessage:(NSString *)text image:(NSData *)image{
+    
+    AVFile *file = [AVFile fileWithData:image];
+    
+    AVIMImageMessage *message = [AVIMImageMessage messageWithText:text file:file attributes:nil];
+    
+    [self.conversation sendMessage:message callback:^(BOOL succeeded, NSError *error) {
+      if (succeeded) {
+        NSLog(@"发送成功！");
+          
+      }
+    }];
+
+}
+
+/**
+  发送音频消息
+ */
+- (void)sendMessage:(NSString *)text audio:(NSData *)audio{
+    
+    AVFile *file = [AVFile fileWithData:audio];
+    AVIMAudioMessage *message = [AVIMAudioMessage messageWithText:text file:file attributes:nil];
+    
+    [self.conversation sendMessage:message callback:^(BOOL succeeded, NSError *error) {
+      if (succeeded) {
+        NSLog(@"发送成功！");
+          
+      }
+    }];
+}
+
+/**
+  发送音频消息
+ */
+- (void)sendMessage:(NSString *)text video:(NSData *)video{
+    
+    AVFile *file = [AVFile fileWithData:video];
+    AVIMVideoMessage *message = [AVIMVideoMessage messageWithText:text file:file attributes:nil];
+    
+    [self.conversation sendMessage:message callback:^(BOOL succeeded, NSError *error) {
+      if (succeeded) {
+        NSLog(@"发送成功！");
+      }
+    }];
+}
+
+
 
 /**
   查询聊天记录

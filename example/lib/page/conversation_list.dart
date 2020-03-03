@@ -10,6 +10,9 @@ import 'conversation.dart';
 
 const String CONVERSATION_CHANNEL = "flutter_lc_im/conversations";
 
+/*
+ * 聊天了列表界面，目前是只加载最新的20条，有下拉刷新。 
+ */
 class ImConversationListPage extends StatefulWidget {
   final String title;
   ImConversationListPage({this.title = '最近联系人列表'});

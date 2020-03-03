@@ -8,6 +8,11 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 const String CONVERSATION_MESSAGE_CHANNEL = "flutter_lc_im/messages";
 
+/*
+ * 聊天界面 
+ * 支持加载历史消息
+ * 支持文本、图片、语音和视频消息的发送
+ */
 class ImConversationPage extends StatefulWidget {
   final ImUser currentUser;
   final ImUser toUser;
@@ -284,7 +289,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
     _scrollToBottom();
 
     //发送到服务器
-    FlutterLcIm.sendMessage(text);
+    FlutterLcIm.sendMessage(text,"",ImMessageType.text);
   }
 
   void _scrollToBottom() {
