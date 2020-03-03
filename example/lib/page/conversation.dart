@@ -29,9 +29,14 @@ class _ImConversationPageState extends State<ImConversationPage> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   ScrollController _scrollController = ScrollController();
+  bool isExpaned = false;
 
   List<ImMessage> _messages = [];
 
+  List _iconbuttons = [
+    { 'name' : '相册', 'icon': Icons.photo_size_select_actual },
+    { 'name' : '拍摄', 'icon': Icons.camera_alt }
+  ];
   static const _messageEventChannel =
       EventChannel(CONVERSATION_MESSAGE_CHANNEL);
 
@@ -129,6 +134,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: isExpaned ? false : true,
       appBar: AppBar(
         backgroundColor: widget.color,
         title: Text(widget.toUser.username),
@@ -142,6 +148,9 @@ class _ImConversationPageState extends State<ImConversationPage> {
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
                   FocusScope.of(context).requestFocus(FocusNode());
+                  setState(() {
+                    this.isExpaned = false;
+                  });
                 },
                 child: SmartRefresher(
                   enablePullDown: true,
@@ -166,11 +175,79 @@ class _ImConversationPageState extends State<ImConversationPage> {
               decoration:
                   BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
             ),
+            Divider(height: 1.0),
+            Visibility(
+              visible: this.isExpaned,
+              child: Container(
+                height: 320.0,
+                decoration:
+                    BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
+                child: _buildMoreActionComposer()) ,
+            ),
+            // AnimatedSwitcher(
+            //     duration: Duration(milliseconds: 350),
+            //     transitionBuilder: (Widget child, Animation<double> animation) => SlideTransition(
+            //             position: Tween<Offset> (
+            //               begin:  const Offset(0, 1),
+            //               end: Offset.zero
+            //             ).animate(animation),
+            //             child: child,
+            //      ),
+            //     child: this.isExpaned ? Container(
+            //     height: 320.0,
+            //     child: _buildMoreActionComposer(),
+            //     decoration:
+            //         BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
+            //   ) :  SizedBox() ,
+            // )
           ]),
         );
       }),
     );
   }
+
+
+  Widget _buildIconButton(String buttonName, IconData icon) {
+     return Column(
+              children: <Widget>[
+              GestureDetector(
+                excludeFromSemantics: true,
+                onTap: () => {
+
+                },
+                child: Container(
+                        width: 60.0,
+                        height: 60.0,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10.0)
+                                    ),
+                        child: Icon(icon, size: 28.0,),
+                        ),
+              ),
+              Container(
+                 margin: EdgeInsets.only(top: 3.0),
+                 child: Text(buttonName, style: TextStyle(fontSize: 12.0, color: Colors.grey[600]))
+                 )
+              ],
+              );
+
+  }
+
+  Widget _buildMoreActionComposer() {
+      return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 10.0,
+                    mainAxisSpacing: 30.0
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0,vertical: 40.0),
+                  scrollDirection: Axis.vertical,
+                  itemCount: _iconbuttons.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return   _buildIconButton(_iconbuttons[index]['name'], _iconbuttons[index]['icon']);
+                    });}
 
   Widget _buildMessageRow(ImMessage message) {
     return ImMessageItemView(
@@ -190,7 +267,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
       child: Container(
         alignment: Alignment.center,
         height: 40.0,
-        margin: const EdgeInsets.only(top: 3, bottom: 3),
+        margin: const EdgeInsets.only(top: 5, bottom: 5),
         child: Row(
           children: <Widget>[
             Container(
@@ -221,7 +298,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
               ),
             ),
             GestureDetector(
-              onTap: () => openAction(),
+              onTap: () => openAction(context),
               child: Container(
                   margin: const EdgeInsets.only(left: 10, right: 10),
                   child: Image.asset(
@@ -236,32 +313,20 @@ class _ImConversationPageState extends State<ImConversationPage> {
     );
   }
 
-  Future<Null> openAction() {
-    return showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                leading: Icon(Icons.photo_camera),
-                title: Text("相机拍摄"),
-                onTap: () async {
-                  // var image = await ImagePicker.pickImage(source: ImageSource.camera);
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_library),
-                title: Text("照片库"),
-                onTap: () async {
-                  // var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          );
-        });
+  Future<Null> openAction(BuildContext context) {
+    if (this._focusNode.hasFocus) {
+      FocusScope.of(context).requestFocus(FocusNode());
+      if (this.isExpaned) {
+        return null;
+      } else {
+            setState(() {
+            this.isExpaned = !this.isExpaned;
+          });
+      }
+    } else {
+      setState(() {
+            this.isExpaned = !this.isExpaned;});
+    }
   }
 
   void _submitMsg(String text) async {
