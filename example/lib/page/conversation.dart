@@ -137,7 +137,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
           _refreshController.refreshCompleted();
 
           //如果是第一次加载数据，需要滑动到底部
-          if (_messages.length <= 10) {
+          if (_messages.length <= _limit) {
             _scrollToBottom();
           }
         }

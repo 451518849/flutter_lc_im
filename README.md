@@ -17,19 +17,19 @@
 **框架地址：
 [flutter_lc_im 1.0.0](https://pub.dev/packages/flutter_lc_im#-readme-tab-)**
 
+
 ### Support
-
-* 	一对一聊天，暂时支持文字，图片不支持 
-* 	获取聊天列表（可自定义列表UI）
-* 	根据聊天情况刷新聊天列表 
-* 	给出聊天列表上的未读消息数 
-
-### Will supoort
-* 	发送图片消息
-* 	发送语音消息
-* 	发送表情
-* 	消息推送
-* 	...... 
+ 
+- [x] 一对一聊天 
+- [x] 获取聊天列表（可自定义列表UI）
+- [x] 根据聊天情况刷新聊天列表 
+- [x] 给出聊天列表上的未读消息数 
+- [x] 发送图片消息
+- [ ] 发送语音消息
+- [ ] 发送表情
+- [ ] 团组聊天
+- [ ] 消息推送
+- [ ] ...... 
 
 ### Install
 Add this to your package's pubspec.yaml file:
@@ -52,7 +52,7 @@ Add this to your package's pubspec.yaml file:
 #### 获取聊天记录
       FlutterLcIm.queryHistoryConversationMessages(）
 #### 发送消息
-       FlutterLcIm.sendMessage(text);   
+       FlutterLcIm.sendMessage();   
 
 ### More
 详细使用请看example中的代码
