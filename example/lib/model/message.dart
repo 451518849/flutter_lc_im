@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_lc_im_example/model/user.dart';
 
@@ -37,6 +38,7 @@ class ImMessage {
   final int timestamp;
   final int messageType;
   final int ioType;
+  final File image;
   final Map<String, dynamic>
       attributes; // 如果最后一条消息是当前用户，则attributes中包含用户的姓名，否则为空
   ImMessage(
@@ -46,6 +48,7 @@ class ImMessage {
       this.toUser,
       this.text,
       this.url,
+      this.image,
       this.ioType,
       this.timestamp,
       this.attributes,
@@ -55,7 +58,7 @@ class ImMessage {
   factory ImMessage.fromJson(Map<dynamic, dynamic> jsonMap) {
     Map contentMap = json.decode(jsonMap['content']);
     String url = "";
-    if(contentMap['_lctype'] < ImMessageType.text){
+    if (contentMap['_lctype'] < ImMessageType.text) {
       url = contentMap['_lcfile']['url'];
     }
     return ImMessage(

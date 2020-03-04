@@ -113,7 +113,9 @@ class ImMessageItemView extends StatelessWidget {
                 nip: BubbleNip.leftBottom,
                 color: Colors.white,
                 child: Image(
-                  image: NetworkImage(message.url + ImageSize),
+                  image: message.image != null
+                      ? FileImage(message.image)
+                      : NetworkImage(message.url + ImageSize),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -136,7 +138,9 @@ class ImMessageItemView extends StatelessWidget {
                 nip: BubbleNip.rightBottom,
                 color: color,
                 child: Image(
-                  image: NetworkImage(message.url + ImageSize),
+                  image: message.image != null
+                      ? FileImage(message.image)
+                      : NetworkImage(message.url + ImageSize),
                   fit: BoxFit.cover,
                 ),
               ),

@@ -18,10 +18,16 @@ PODS:
     - AVOSCloudIM (= 12.1.2)
     - AVOSCloudLiveQuery (= 12.1.2)
     - Flutter
+  - flutter_plugin_android_lifecycle (0.0.1):
+    - Flutter
+  - image_picker (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_lc_im (from `.symlinks/plugins/flutter_lc_im/ios`)
+  - flutter_plugin_android_lifecycle (from `.symlinks/plugins/flutter_plugin_android_lifecycle/ios`)
+  - image_picker (from `.symlinks/plugins/image_picker/ios`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -34,6 +40,10 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_lc_im:
     :path: ".symlinks/plugins/flutter_lc_im/ios"
+  flutter_plugin_android_lifecycle:
+    :path: ".symlinks/plugins/flutter_plugin_android_lifecycle/ios"
+  image_picker:
+    :path: ".symlinks/plugins/image_picker/ios"
 
 SPEC CHECKSUMS:
   AVOSCloud: 2b7219f503cd0f14c64ee123768a0360ab7a335a
@@ -41,6 +51,8 @@ SPEC CHECKSUMS:
   AVOSCloudLiveQuery: 82a1d5fd0ce89145f75ecf7913eb56d9f5039a0f
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_lc_im: 75ce00732a31643947c155db817df56a4fec777c
+  flutter_plugin_android_lifecycle: 47de533a02850f070f5696a623995e93eddcdb9b
+  image_picker: e3eacd46b94694dde7cf2705955cece853aa1a8f
 
 PODFILE CHECKSUM: 3dbe063e9c90a5d7c9e4e76e70a821b9e2c1d271
 

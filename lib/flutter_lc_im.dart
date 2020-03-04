@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
@@ -45,9 +46,9 @@ class FlutterLcIm {
   }
 
   static Future<dynamic> sendMessage(
-      String text, String filePath, int messageType) async {
+      String text, Uint8List file, int messageType) async {
     var result = await _channel.invokeMethod('sendMessage',
-        {'text': text, "filePath": filePath, "messageType": messageType});
+        {'text': text, "file": file, "messageType": messageType});
     return result;
   }
 

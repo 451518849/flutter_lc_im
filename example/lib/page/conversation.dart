@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lc_im_example/model/message.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_lc_im_example/model/user.dart';
 import 'package:flutter_lc_im_example/view/message.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:image_picker/image_picker.dart';
 
 const String CONVERSATION_MESSAGE_CHANNEL = "flutter_lc_im/messages";
 
@@ -37,6 +40,18 @@ class _ImConversationPageState extends State<ImConversationPage> {
 
   //控制是否显示相册的工具栏
   bool _isShowExpaned = false;
+
+  //控制是否显示emoji
+  bool _isShowEmoji = false;
+
+//键盘谈起来滑动的距离
+  double _keyboardHeight = 300;
+
+//弹起工具栏的高度
+  double _expandedPanelHeight = 200;
+
+//添加图片滑动的距离
+  double _imageScrollHeight = 220;
 
   List<ImMessage> _messages = [];
 
@@ -112,10 +127,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
             newMessages[0].timestamp > _messages[0].timestamp) {
           //当消息只有一条时，需要判断是接收消息还是刷新的历史消息，接收消息的时间大于历史消息
           _messages.addAll(newMessages);
-          //延迟执行滑动，等界面重新加载数据后再执行滑动
-          Future.delayed(Duration(seconds: 1), () {
-            _scrollToBottom(0);
-          });
+          _scrollToBottom();
         } else {
           //刷新历史消息
           List<ImMessage> messages = [];
@@ -123,23 +135,25 @@ class _ImConversationPageState extends State<ImConversationPage> {
           messages.addAll(_messages);
           _messages = messages;
           _refreshController.refreshCompleted();
+
+          //如果是第一次加载数据，需要滑动到底部
+          if (_messages.length <= 10) {
+            _scrollToBottom();
+          }
         }
       }
     });
   }
 
   Future<Null> _focusNodeListener() async {
-    if (_focusNode.hasFocus && _messages.length > 4) {
-      if (!_isShowExpaned) {
-        _scrollToBottom(300);
-      } else {
-        _scrollToBottom(100);
-      }
-    } else {}
-
-    setState(() {
-      _isShowExpaned = false;
-    });
+    if (_focusNode.hasFocus) {
+      Future.delayed(Duration(milliseconds: 100), () {
+        setState(() {
+          _isShowExpaned = false;
+          _scrollToBottom();
+        });
+      });
+    }
   }
 
   @override
@@ -190,73 +204,22 @@ class _ImConversationPageState extends State<ImConversationPage> {
                   BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
             ),
             Divider(height: 1.0),
-            !this._isShowExpaned
+            !_isShowExpaned
                 ? SizedBox()
                 : Container(
-                    height: 200,
+                    height: _expandedPanelHeight,
                     decoration: BoxDecoration(
                         color: Color.fromRGBO(241, 243, 244, 0.9)),
-                    child: _buildMoreActionComposer()),
+                    child: _buildExpandedPanelComposer()),
           ]),
         );
       }),
     );
   }
 
-  Widget _buildIconButton(String buttonName, IconData icon) {
-    return Column(
-      children: <Widget>[
-        GestureDetector(
-          excludeFromSemantics: true,
-          onTap: () => {},
-          child: Container(
-            width: 60.0,
-            height: 60.0,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(10.0)),
-            child: Icon(
-              icon,
-              size: 28.0,
-            ),
-          ),
-        ),
-        Container(
-            margin: EdgeInsets.only(top: 3.0),
-            child: Text(buttonName,
-                style: TextStyle(fontSize: 12.0, color: Colors.grey[600])))
-      ],
-    );
-  }
-
-  Widget _buildMoreActionComposer() {
-    return GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 10.0,
-            mainAxisSpacing: 40.0,
-            childAspectRatio: 0.8),
-        padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
-        scrollDirection: Axis.vertical,
-        itemCount: _iconbuttons.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _buildIconButton(
-              _iconbuttons[index]['name'], _iconbuttons[index]['icon']);
-        });
-  }
-
-  Widget _buildMessageRow(ImMessage message) {
-    return ImMessageItemView(
-      message: message,
-      avatarUrl: message.ioType == ImMessageIOType.messageIOTypeOut
-          ? widget.currentUser.avatarUrl
-          : widget.toUser.avatarUrl,
-      messageAlign: message.ioType == ImMessageIOType.messageIOTypeOut
-          ? MessageRightAlign
-          : MessageLeftAlign,
-    );
-  }
-
+/*
+ * 文字输入框
+ */
   Widget _buildInputTextComposer() {
     return IconTheme(
       data: IconThemeData(color: Color.fromRGBO(241, 243, 244, 0.9)),
@@ -296,12 +259,16 @@ class _ImConversationPageState extends State<ImConversationPage> {
             GestureDetector(
               onTap: () => _openExpandedAction(context),
               child: Container(
+                  margin: const EdgeInsets.only(left: 10),
+                  child: Image.asset('assets/images/emoji.png',
+                      height: 29, width: 29, color: Colors.black)),
+            ),
+            GestureDetector(
+              onTap: () => _openExpandedAction(context),
+              child: Container(
                   margin: const EdgeInsets.only(left: 10, right: 10),
-                  child: Image.asset(
-                    'assets/images/more.png',
-                    height: 24,
-                    width: 24,
-                  )),
+                  child: Image.asset('assets/images/more.png',
+                      height: 24, width: 24, color: Colors.black)),
             ),
           ],
         ),
@@ -309,24 +276,103 @@ class _ImConversationPageState extends State<ImConversationPage> {
     );
   }
 
+  Widget _buildMessageRow(ImMessage message) {
+    return ImMessageItemView(
+      message: message,
+      avatarUrl: message.ioType == ImMessageIOType.messageIOTypeOut
+          ? widget.currentUser.avatarUrl
+          : widget.toUser.avatarUrl,
+      messageAlign: message.ioType == ImMessageIOType.messageIOTypeOut
+          ? MessageRightAlign
+          : MessageLeftAlign,
+    );
+  }
+
+/*
+ * 下方的弹出工具栏 
+ */
+  Widget _buildExpandedPanelComposer() {
+    return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 10.0,
+            mainAxisSpacing: 40.0,
+            childAspectRatio: 0.8),
+        padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
+        scrollDirection: Axis.vertical,
+        itemCount: _iconbuttons.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _buildIconButton(
+              _iconbuttons[index]['name'], _iconbuttons[index]['icon']);
+        });
+  }
+
+  /*
+   * 工具栏中的图标
+   */
+  Widget _buildIconButton(String buttonName, IconData icon) {
+    return Column(
+      children: <Widget>[
+        GestureDetector(
+          excludeFromSemantics: true,
+          onTap: () {
+            _openExpandedIcon(buttonName);
+          },
+          child: Container(
+            width: 60.0,
+            height: 60.0,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(10.0)),
+            child: Icon(
+              icon,
+              size: 28.0,
+            ),
+          ),
+        ),
+        Container(
+            margin: EdgeInsets.only(top: 3.0),
+            child: Text(buttonName,
+                style: TextStyle(fontSize: 12.0, color: Colors.grey[600])))
+      ],
+    );
+  }
+
+  /*
+   * 点击 + 图标 
+   */
   void _openExpandedAction(BuildContext context) {
     if (this._focusNode.hasFocus) {
       FocusScope.of(context).requestFocus(FocusNode());
 
-      Future.delayed(Duration(milliseconds: 200), () {
+      //Focus和setState冲突，延迟执行setState
+      Future.delayed(Duration(milliseconds: 100), () {
         setState(() {
           _isShowExpaned = !_isShowExpaned;
-          _scrollToBottom(200);
+          _scrollToBottom();
         });
       });
     } else {
       setState(() {
         _isShowExpaned = !_isShowExpaned;
-        _scrollToBottom(0);
+        _scrollToBottom();
       });
     }
   }
 
+  void _openExpandedIcon(String iconName) async {
+    if (iconName == '相册') {
+      var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+      _submitImageMsg(_textController.text, image);
+    } else if (iconName == '拍摄') {
+      var video = await ImagePicker.pickImage(source: ImageSource.camera);
+      _submitImageMsg(_textController.text, video);
+    }
+  }
+
+  /*
+  * 发送文字消息 
+  */
   void _submitMsg(String text) async {
     if (text == null || text == "") {
       return;
@@ -344,17 +390,68 @@ class _ImConversationPageState extends State<ImConversationPage> {
       _messages.add(message);
     });
 
-    _scrollToBottom(0);
+    _scrollToBottom();
 
     //发送到服务器
-    FlutterLcIm.sendMessage(text, "", ImMessageType.text);
+    FlutterLcIm.sendMessage(text, null, ImMessageType.text);
   }
 
-  void _scrollToBottom(double offset) {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent + offset,
-      curve: Curves.easeOut,
-      duration: const Duration(milliseconds: 300),
-    );
+  /*
+  * 发送图片+文字消息 
+  */
+  void _submitImageMsg(String text, File image) async {
+    if (image == null) {
+      return;
+    }
+
+    ImMessage message = ImMessage(
+        fromUser: widget.currentUser,
+        toUser: widget.toUser,
+        text: text,
+        image: image,
+        ioType: ImMessageIOType.messageIOTypeOut,
+        messageType: ImMessageType.image);
+    setState(() {
+      _messages.add(message);
+    });
+
+    _scrollToBottom(offset: _imageScrollHeight);
+    //发送到服务器
+    FlutterLcIm.sendMessage(text, image.readAsBytesSync(), ImMessageType.image);
+  }
+
+  /*
+  * 发送视频+文字消息 
+  */
+  void _submitVideoMsg(String text, File video) async {
+    if (video == null) {
+      return;
+    }
+
+    ImMessage message = ImMessage(
+        fromUser: widget.currentUser,
+        toUser: widget.toUser,
+        text: text,
+        image: video,
+        ioType: ImMessageIOType.messageIOTypeOut,
+        messageType: ImMessageType.video);
+    setState(() {
+      _messages.add(message);
+    });
+
+    _scrollToBottom();
+
+    //发送到服务器
+    FlutterLcIm.sendMessage(text, video.readAsBytesSync(), ImMessageType.video);
+  }
+
+  void _scrollToBottom({double offset = 0, int milliseconds = 100}) {
+    Future.delayed(Duration(milliseconds: 100), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent + offset,
+        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 300),
+      );
+    });
   }
 }
