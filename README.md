@@ -28,7 +28,7 @@
 - [ ] 发送语音消息
 - [ ] 发送表情
 - [ ] 团组聊天
-- [ ] 消息推送
+- [x] 消息推送
 - [ ] ...... 
 
 ### Install
@@ -54,6 +54,31 @@ Add this to your package's pubspec.yaml file:
 #### 发送消息
        FlutterLcIm.sendMessage();   
 
+#### 关于推送
+##### ios推送
+ios端的推送在AppDelegate.m文件中设置，已给参考代码。主要步骤为三步
+
+1.  通过UNUserNotificationCenter注册
+1.  通过AVInstallation设置deviceToken
+1. 处理推送
+
+##### android推送
+android端目前只支持后台线程推送，暂不支持混合推送。推送代码很简单，只要在项目中的MainActivity中的resume函数中设置几行代码，如下所示：
+
+ 
+	    @Override
+	    protected void onResume() {
+	    super.onResume();
+	
+	    // 获取推送消息数据
+	    String message = this.getIntent().getStringExtra("com.avoscloud.Data");
+	    String channel = this.getIntent().getStringExtra("com.avoscloud.Channel");
+	
+	    if (message != null && FlutterLcImPlugin.notificationCallback != null){
+	      FlutterLcImPlugin.notificationCallback.success(message);
+	    }
+    }
+   
 ### More
 详细使用请看example中的代码
     
