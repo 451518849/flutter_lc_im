@@ -390,7 +390,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
       _messages.add(message);
     });
 
-    _scrollToBottom();
+    // _scrollToBottom();
 
     //发送到服务器
     FlutterLcIm.sendMessage(text, null, ImMessageType.text);

@@ -312,7 +312,9 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         };
         [array addObject:dic];
     }
-    conversationEventBlock([array copy]);
+    if(conversationEventBlock != nil){
+        conversationEventBlock([array copy]);
+    }
 }
 
 -(void)sendMessagesToFlutter:(NSArray<AVIMMessage *> *)messages {
@@ -332,7 +334,9 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         };
         [array addObject:dic];
     }
-    messageEventBlock([array copy]);
+    if(messageEventBlock != nil){
+        messageEventBlock([array copy]);
+    }
 }
 
 
