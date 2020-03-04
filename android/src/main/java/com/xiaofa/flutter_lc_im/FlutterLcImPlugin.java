@@ -1,13 +1,10 @@
 package com.xiaofa.flutter_lc_im;
 
+import android.app.Activity;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,8 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 import cn.leancloud.AVFile;
+import cn.leancloud.AVInstallation;
 import cn.leancloud.AVLogger;
 import cn.leancloud.AVOSCloud;
+import cn.leancloud.AVObject;
 import cn.leancloud.im.v2.AVIMClient;
 import cn.leancloud.im.v2.AVIMConversation;
 import cn.leancloud.im.v2.AVIMConversationsQuery;
@@ -34,7 +33,10 @@ import cn.leancloud.im.v2.messages.AVIMAudioMessage;
 import cn.leancloud.im.v2.messages.AVIMImageMessage;
 import cn.leancloud.im.v2.messages.AVIMTextMessage;
 import cn.leancloud.im.v2.messages.AVIMVideoMessage;
+import cn.leancloud.push.PushService;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
@@ -42,9 +44,11 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 /** FlutterLcImPlugin */
-public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
+public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler {
 
   public static final String FLUTTER_IM_NAME = "flutter_lc_im";
   public static final String FLUTTER_CHANNEL_MESSAGE = "flutter_lc_im/messages";
@@ -57,11 +61,14 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
   private AVIMConversation conversation;
 
   static Context context;
+  static Activity activity;
   static BinaryMessenger messenger;
 
   private EventChannel.EventSink conversationEventCallback;
   private EventChannel.EventSink messageEventCallback;
-  private EventChannel.EventSink notificationEventCallback;
+
+  //留给客户端做数据交互
+  public static EventChannel.EventSink notificationEventCallback;
 
   public FlutterLcImPlugin() {
   }
@@ -73,6 +80,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
     final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), FLUTTER_IM_NAME);
     channel.setMethodCallHandler(new FlutterLcImPlugin());
   }
+
 
   // This static function is optional and equivalent to onAttachedToEngine. It supports the old
   // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
@@ -86,10 +94,30 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), FLUTTER_IM_NAME);
     channel.setMethodCallHandler(new FlutterLcImPlugin());
-
   }
+
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+  }
+
+  @Override
+  public void onAttachedToActivity(ActivityPluginBinding binding) {
+    activity = binding.getActivity();
+  }
+
+  @Override
+  public void onDetachedFromActivityForConfigChanges() {
+
+  }
+
+  @Override
+  public void onReattachedToActivityForConfigChanges(ActivityPluginBinding binding) {
+
+  }
+
+  @Override
+  public void onDetachedFromActivity() {
+
   }
 
 
@@ -163,7 +191,6 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
 
     AVOSCloud.setLogLevel(AVLogger.Level.DEBUG);
     AVOSCloud.initialize(context, appId, appKey, api);
-
     initFlutterChannels();
   }
 
@@ -172,6 +199,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
    * */
   private void login(String userId, final Result result) {
 
+    setPushSetting(userId);
     this.client = AVIMClient.getInstance(userId);
     this.client.open(new AVIMClientCallback() {
       @Override
@@ -184,6 +212,36 @@ public class FlutterLcImPlugin implements FlutterPlugin, MethodCallHandler {
     });
   }
 
+  /**
+   * 初始化推送，订阅clientId所在的频道
+   * @param clientId
+   */
+  private void setPushSetting(String clientId){
+
+    PushService.setAutoWakeUp(true);
+    PushService.setDefaultChannelId(context, "default");//这个channel和订阅的channel不一样，只能为default
+    PushService.subscribe(context,clientId,activity.getClass()); //订阅频道,这一步必须，否则无法收到推送
+    PushService.setDefaultPushCallback(context,activity.getClass());
+
+    AVInstallation.getCurrentInstallation().saveInBackground().subscribe(new Observer<AVObject>() {
+      @Override
+      public void onSubscribe(Disposable d) {
+      }
+      @Override
+      public void onNext(AVObject avObject) {
+        // 关联 installationId 到用户表等操作。
+        String installationId = AVInstallation.getCurrentInstallation().getInstallationId();
+        System.out.println("保存成功：" + installationId );
+      }
+      @Override
+      public void onError(Throwable e) {
+        System.out.println("保存失败，错误信息：" + e.getMessage());
+      }
+      @Override
+      public void onComplete() {
+      }
+    });
+  }
   /*
    * 接收会话handler
    */
