@@ -60,7 +60,7 @@ class ImMessageItemView extends StatelessWidget {
                 color: Colors.white,
                 child: Text(message.text,
                     textAlign: TextAlign.left,
-                    style: TextStyle(fontSize: 14.0)),
+                    style: TextStyle(fontSize: 16.0)),
               ),
             ),
           ],
@@ -81,7 +81,7 @@ class ImMessageItemView extends StatelessWidget {
                 color: color,
                 child: Text(message.text,
                     textAlign: TextAlign.left,
-                    style: TextStyle(fontSize: 14.0)),
+                    style: TextStyle(fontSize: 16.0)),
               ),
             ),
             Container(

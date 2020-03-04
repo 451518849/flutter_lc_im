@@ -34,13 +34,15 @@ class _ImConversationPageState extends State<ImConversationPage> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   ScrollController _scrollController = ScrollController();
-  bool isExpaned = false;
+
+  //控制是否显示相册的工具栏
+  bool _isShowExpaned = false;
 
   List<ImMessage> _messages = [];
 
   List _iconbuttons = [
-    { 'name' : '相册', 'icon': Icons.photo_size_select_actual },
-    { 'name' : '拍摄', 'icon': Icons.camera_alt }
+    {'name': '相册', 'icon': Icons.photo_size_select_actual},
+    {'name': '拍摄', 'icon': Icons.camera_alt}
   ];
   static const _messageEventChannel =
       EventChannel(CONVERSATION_MESSAGE_CHANNEL);
@@ -112,7 +114,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
           _messages.addAll(newMessages);
           //延迟执行滑动，等界面重新加载数据后再执行滑动
           Future.delayed(Duration(seconds: 1), () {
-            _scrollToBottom();
+            _scrollToBottom(0);
           });
         } else {
           //刷新历史消息
@@ -128,18 +130,22 @@ class _ImConversationPageState extends State<ImConversationPage> {
 
   Future<Null> _focusNodeListener() async {
     if (_focusNode.hasFocus && _messages.length > 4) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 300,
-        curve: Curves.easeOut,
-        duration: const Duration(milliseconds: 300),
-      );
+      if (!_isShowExpaned) {
+        _scrollToBottom(300);
+      } else {
+        _scrollToBottom(100);
+      }
     } else {}
+
+    setState(() {
+      _isShowExpaned = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: isExpaned ? false : true,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: widget.color,
         title: Text(widget.toUser.username),
@@ -152,10 +158,13 @@ class _ImConversationPageState extends State<ImConversationPage> {
               child: GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                  setState(() {
-                    this.isExpaned = false;
-                  });
+                  if (_focusNode.hasFocus) {
+                    FocusScope.of(context).requestFocus(FocusNode());
+                  } else {
+                    setState(() {
+                      this._isShowExpaned = false;
+                    });
+                  }
                 },
                 child: SmartRefresher(
                   enablePullDown: true,
@@ -181,78 +190,60 @@ class _ImConversationPageState extends State<ImConversationPage> {
                   BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
             ),
             Divider(height: 1.0),
-            Visibility(
-              visible: this.isExpaned,
-              child: Container(
-                height: 320.0,
-                decoration:
-                    BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
-                child: _buildMoreActionComposer()) ,
-            ),
-            // AnimatedSwitcher(
-            //     duration: Duration(milliseconds: 350),
-            //     transitionBuilder: (Widget child, Animation<double> animation) => SlideTransition(
-            //             position: Tween<Offset> (
-            //               begin:  const Offset(0, 1),
-            //               end: Offset.zero
-            //             ).animate(animation),
-            //             child: child,
-            //      ),
-            //     child: this.isExpaned ? Container(
-            //     height: 320.0,
-            //     child: _buildMoreActionComposer(),
-            //     decoration:
-            //         BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
-            //   ) :  SizedBox() ,
-            // )
+            !this._isShowExpaned
+                ? SizedBox()
+                : Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(241, 243, 244, 0.9)),
+                    child: _buildMoreActionComposer()),
           ]),
         );
       }),
     );
   }
 
-
   Widget _buildIconButton(String buttonName, IconData icon) {
-     return Column(
-              children: <Widget>[
-              GestureDetector(
-                excludeFromSemantics: true,
-                onTap: () => {
-
-                },
-                child: Container(
-                        width: 60.0,
-                        height: 60.0,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10.0)
-                                    ),
-                        child: Icon(icon, size: 28.0,),
-                        ),
-              ),
-              Container(
-                 margin: EdgeInsets.only(top: 3.0),
-                 child: Text(buttonName, style: TextStyle(fontSize: 12.0, color: Colors.grey[600]))
-                 )
-              ],
-              );
-
+    return Column(
+      children: <Widget>[
+        GestureDetector(
+          excludeFromSemantics: true,
+          onTap: () => {},
+          child: Container(
+            width: 60.0,
+            height: 60.0,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(10.0)),
+            child: Icon(
+              icon,
+              size: 28.0,
+            ),
+          ),
+        ),
+        Container(
+            margin: EdgeInsets.only(top: 3.0),
+            child: Text(buttonName,
+                style: TextStyle(fontSize: 12.0, color: Colors.grey[600])))
+      ],
+    );
   }
 
   Widget _buildMoreActionComposer() {
-      return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 30.0
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0,vertical: 40.0),
-                  scrollDirection: Axis.vertical,
-                  itemCount: _iconbuttons.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return   _buildIconButton(_iconbuttons[index]['name'], _iconbuttons[index]['icon']);
-                    });}
+    return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 10.0,
+            mainAxisSpacing: 40.0,
+            childAspectRatio: 0.8),
+        padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
+        scrollDirection: Axis.vertical,
+        itemCount: _iconbuttons.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _buildIconButton(
+              _iconbuttons[index]['name'], _iconbuttons[index]['icon']);
+        });
+  }
 
   Widget _buildMessageRow(ImMessage message) {
     return ImMessageItemView(
@@ -303,7 +294,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
               ),
             ),
             GestureDetector(
-              onTap: () => openAction(context),
+              onTap: () => _openExpandedAction(context),
               child: Container(
                   margin: const EdgeInsets.only(left: 10, right: 10),
                   child: Image.asset(
@@ -318,19 +309,21 @@ class _ImConversationPageState extends State<ImConversationPage> {
     );
   }
 
-  Future<Null> openAction(BuildContext context) {
+  void _openExpandedAction(BuildContext context) {
     if (this._focusNode.hasFocus) {
       FocusScope.of(context).requestFocus(FocusNode());
-      if (this.isExpaned) {
-        return null;
-      } else {
-            setState(() {
-            this.isExpaned = !this.isExpaned;
-          });
-      }
+
+      Future.delayed(Duration(milliseconds: 200), () {
+        setState(() {
+          _isShowExpaned = !_isShowExpaned;
+          _scrollToBottom(200);
+        });
+      });
     } else {
       setState(() {
-            this.isExpaned = !this.isExpaned;});
+        _isShowExpaned = !_isShowExpaned;
+        _scrollToBottom(0);
+      });
     }
   }
 
@@ -351,15 +344,15 @@ class _ImConversationPageState extends State<ImConversationPage> {
       _messages.add(message);
     });
 
-    _scrollToBottom();
+    _scrollToBottom(0);
 
     //发送到服务器
-    FlutterLcIm.sendMessage(text,"",ImMessageType.text);
+    FlutterLcIm.sendMessage(text, "", ImMessageType.text);
   }
 
-  void _scrollToBottom() {
+  void _scrollToBottom(double offset) {
     _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
+      _scrollController.position.maxScrollExtent + offset,
       curve: Curves.easeOut,
       duration: const Duration(milliseconds: 300),
     );
