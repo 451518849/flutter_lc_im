@@ -1,6 +1,6 @@
 name: flutter_lc_im
-description: A LeanClound IM flutter plugin project.
-version: 0.2.5
+description: This is an im plugin that encapsulates leancloud sdk and provides a custom interface for app.
+version: 1.0.0
 author: xiaofwang <451518849@qq.com>
 homepage: https://github.com/451518849/flutter_lc_im
 

@@ -1,5 +1,5 @@
 name: flutter_lc_im_example
-description: Demonstrates how to use the flutter_lc_im plugin.
+description: This is an im plugin that encapsulates leancloud sdk and provides a custom interface for app.
 publish_to: 'none'
 
 environment:
