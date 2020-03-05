@@ -83,11 +83,14 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     }else if([@"sendMessage" isEqualToString:call.method]){
         
         NSString *text                       = call.arguments[@"text"];
+        int messageType                      = [call.arguments[@"messageType"] intValue];
         FlutterStandardTypedData* fileBuffer = (FlutterStandardTypedData*)call.arguments[@"file"];
-
-        int messageType = [call.arguments[@"messageType"] intValue];
-
-        [self sendMessage:text file:fileBuffer.data messageType:messageType];
+        
+        if ((NSNull *)fileBuffer ==  [NSNull null]) {
+            [self sendMessage:text file:nil messageType:messageType];
+        }else {
+            [self sendMessage:text file:fileBuffer.data messageType:messageType];
+        }
 
     }else if([@"queryHistoryConversationMessages" isEqualToString:call.method]){
         
