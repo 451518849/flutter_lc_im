@@ -57,11 +57,13 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         NSString *appId  = call.arguments[@"app_id"];
         NSString *appKey = call.arguments[@"app_key"];
         NSString *url    = call.arguments[@"api"];
+        BOOL debug    = [call.arguments[@"debug"] boolValue];
+
         isRegister       = true;
 
         [self registerConversationWithAppId:appId
                                      appKey:appKey
-                                     apiUrl:url];
+                                     apiUrl:url debug:debug];
 
         }
         
@@ -121,8 +123,9 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
  */
 - (void)registerConversationWithAppId:(NSString *)appId
                                appKey:(NSString *)appKey
-                               apiUrl:(NSString *)url{
-    [AVOSCloud setAllLogsEnabled:YES];
+                               apiUrl:(NSString *)url
+                                debug:(BOOL) debug{
+    [AVOSCloud setAllLogsEnabled:debug];
 
     [AVOSCloud setApplicationId:appId
           clientKey:appKey

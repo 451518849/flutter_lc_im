@@ -10,11 +10,12 @@ class FlutterLcIm {
    * leancloud 注册，api为leancloud上绑定的域名
    */
   static Future<dynamic> register(
-      String appId, String appKey, String api) async {
+      String appId, String appKey, String api,bool debug) async {
     var result = await _channel.invokeMethod('register', {
       'app_id': appId,
       'app_key': appKey,
       'api': api,
+      'debug': debug
     });
     return result;
   }

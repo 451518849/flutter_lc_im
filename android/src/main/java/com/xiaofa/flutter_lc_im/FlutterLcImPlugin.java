@@ -141,8 +141,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
           String appId = call.argument("app_id");
           String appKey = call.argument("app_key");
           String api = call.argument("api");
+          boolean debug = call.argument("debug");
 
-          this.initSetting(appId, appKey, api, result);
+          this.initSetting(appId, appKey, api, debug);
           isRegister = true;
 
         } else {
@@ -197,9 +198,11 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   /*
    *  开启聊天
    * */
-  private void initSetting(String appId, String appKey, String api, final Result result) {
+  private void initSetting(String appId, String appKey, String api,boolean debug) {
 
-    AVOSCloud.setLogLevel(AVLogger.Level.DEBUG);
+    if (debug){
+      AVOSCloud.setLogLevel(AVLogger.Level.DEBUG);
+    }
     AVOSCloud.initialize(context, appId, appKey, api);
     AVIMOptions.getGlobalOptions().setUnreadNotificationEnabled(true);
     this.setConversationEventHandler();

@@ -18,7 +18,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     FlutterLcIm.register("uAsHYp2qXIhJ6SYB88ehVXCr-gzGzoHsz",
-        "5HdoMlbpmaKDfs7H4blpdLVf", "https://leancloud.findxz.com");
+        "5HdoMlbpmaKDfs7H4blpdLVf", "https://leancloud.findxz.com",false);
     FlutterLcIm.login("1");
   }
 
