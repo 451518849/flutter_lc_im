@@ -128,6 +128,8 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
           clientKey:appKey
     serverURLString:url];
 
+    [AVIMClient setUnreadNotificationEnabled:YES];
+
     [self setFlutterChannels];
 }
 
@@ -159,6 +161,7 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
             //会话建立成功
             NSLog(@"会话创建成功");
             weakSelf.conversation = conversation;
+            [weakSelf.conversation readInBackground];
             [weakSelf queryHistoryConversationMessages:10 messageId:nil timestamp:0];
         }
     }];
@@ -169,7 +172,8 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     query.limit       = limit;
     query.skip        = offset;
     query.option      = AVIMConversationQueryOptionWithMessage;
-    query.cacheMaxAge = kAVIMCachePolicyIgnoreCache;
+    query.cachePolicy = kAVCachePolicyNetworkElseCache;
+    query.cacheMaxAge = 24 * 60 * 60; //缓存一天
     
     [query findConversationsWithCallback:^(NSArray<AVIMConversation *> * _Nullable conversations,
                                            NSError * _Nullable error) {
@@ -200,8 +204,11 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
   发送文本消息
  */
 - (void)sendMessage:(NSString *)text{
-    AVIMTextMessage *message = [AVIMTextMessage messageWithText:text attributes:nil];
-    [self.conversation sendMessage:message callback:^(BOOL succeeded, NSError *error) {
+    AVIMTextMessage *message  = [AVIMTextMessage messageWithText:text attributes:nil];
+    AVIMMessageOption *option = [[AVIMMessageOption alloc] init];
+    option.pushData           = @{@"alert" : @"您有一条未读消息"};
+
+    [self.conversation sendMessage:message option:option callback:^(BOOL succeeded, NSError *error) {
       if (succeeded) {
         NSLog(@"发送成功！");
           
@@ -214,11 +221,12 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
  */
 - (void)sendMessage:(NSString *)text image:(NSData *)image{
     
-    AVFile *file = [AVFile fileWithData:image];
-    
+    AVFile *file              = [AVFile fileWithData:image];
     AVIMImageMessage *message = [AVIMImageMessage messageWithText:text file:file attributes:nil];
-    
-    [self.conversation sendMessage:message callback:^(BOOL succeeded, NSError *error) {
+    AVIMMessageOption *option = [[AVIMMessageOption alloc] init];
+    option.pushData           = @{@"alert" : @"您有一条未读消息"};
+
+    [self.conversation sendMessage:message option:option callback:^(BOOL succeeded, NSError *error) {
       if (succeeded) {
         NSLog(@"发送成功！");
           
@@ -232,10 +240,12 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
  */
 - (void)sendMessage:(NSString *)text audio:(NSData *)audio{
     
-    AVFile *file = [AVFile fileWithData:audio];
+    AVFile *file              = [AVFile fileWithData:audio];
     AVIMAudioMessage *message = [AVIMAudioMessage messageWithText:text file:file attributes:nil];
-    
-    [self.conversation sendMessage:message callback:^(BOOL succeeded, NSError *error) {
+    AVIMMessageOption *option = [[AVIMMessageOption alloc] init];
+    option.pushData           = @{@"alert" : @"您有一条未读消息"};
+
+    [self.conversation sendMessage:message option:option callback:^(BOOL succeeded, NSError *error) {
       if (succeeded) {
         NSLog(@"发送成功！");
           
@@ -378,6 +388,27 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     self.conversation = conversation;
     if (message != nil) {
         [self sendMessagesToFlutter:@[message]];
+    }
+}
+
+- (void)conversation:(AVIMConversation *)conversation didUpdateForKey:(AVIMConversationUpdatedKey)key{
+    if ([key isEqualToString:AVIMConversationUpdatedKeyUnreadMessagesCount]) {
+        //更新未读消息
+        NSMutableArray *array          = [[NSMutableArray alloc] init];
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+        NSString *lastMessageAt        = [dateFormatter stringFromDate:conversation.lastMessageAt];
+        NSDictionary *dic              = @{@"clientId":conversation.clientId,
+                              @"conversationId":conversation.conversationId,
+                              @"lastMessageAt":lastMessageAt,
+                              @"members":conversation.members,
+                              @"unreadMessagesCount":@(conversation.unreadMessagesCount),
+                              @"lastMessage":conversation.lastMessage.content
+        };
+        [array addObject:dic];
+        if(conversationEventBlock != nil){
+            conversationEventBlock([array copy]);
+        }
     }
 }
 

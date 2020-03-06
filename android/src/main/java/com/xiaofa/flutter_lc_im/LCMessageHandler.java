@@ -14,11 +14,11 @@ import io.flutter.plugin.common.EventChannel;
 // Java/Android SDK 通过定制自己的消息事件 Handler 处理服务端下发的消息通知
 public class LCMessageHandler extends AVIMMessageHandler {
 
-    protected EventChannel.EventSink messageEventCallback;
+    public EventChannel.EventSink messageEventCallback;
 
+    public LCMessageHandler(){}
     public LCMessageHandler(EventChannel.EventSink messageEventCallback){
        this.messageEventCallback = messageEventCallback;
-       System.out.println("LCMessageHandler1:"+this.messageEventCallback);
     }
     /**
      * 重载此方法来处理接收消息
@@ -42,7 +42,9 @@ public class LCMessageHandler extends AVIMMessageHandler {
             dic.put("timestamp", message.getTimestamp());
             dic.put("ioType", message.getMessageIOType().getIOType());
             messages.add(dic);
-            this.messageEventCallback.success(messages);
+            if (this.messageEventCallback != null){
+                this.messageEventCallback.success(messages);
+            }
         }
     }
 }

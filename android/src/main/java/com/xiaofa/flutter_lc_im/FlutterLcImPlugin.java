@@ -17,12 +17,15 @@ import cn.leancloud.AVInstallation;
 import cn.leancloud.AVLogger;
 import cn.leancloud.AVOSCloud;
 import cn.leancloud.AVObject;
+import cn.leancloud.AVQuery;
+import cn.leancloud.im.AVIMOptions;
 import cn.leancloud.im.v2.AVIMClient;
 import cn.leancloud.im.v2.AVIMConversation;
 import cn.leancloud.im.v2.AVIMConversationsQuery;
 import cn.leancloud.im.v2.AVIMException;
 import cn.leancloud.im.v2.AVIMMessage;
 import cn.leancloud.im.v2.AVIMMessageManager;
+import cn.leancloud.im.v2.AVIMMessageOption;
 import cn.leancloud.im.v2.annotation.AVIMMessageType;
 import cn.leancloud.im.v2.callback.AVIMClientCallback;
 import cn.leancloud.im.v2.callback.AVIMConversationCallback;
@@ -67,6 +70,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   private EventChannel.EventSink conversationEventCallback;
   private EventChannel.EventSink messageEventCallback;
 
+  private LCConversationEventHandler conversationEventHandler;
+  private LCMessageHandler messageHandler;
+
   //留给客户端做数据交互
   public static EventChannel.EventSink notificationEventCallback;
 
@@ -93,7 +99,11 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   // in the same class.
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), FLUTTER_IM_NAME);
-    channel.setMethodCallHandler(new FlutterLcImPlugin());
+    FlutterLcImPlugin im = new FlutterLcImPlugin();
+    context = registrar.context();
+    activity = registrar.activity();
+    messenger = registrar.messenger();
+    channel.setMethodCallHandler(im);
   }
 
   @Override
@@ -191,6 +201,8 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
     AVOSCloud.setLogLevel(AVLogger.Level.DEBUG);
     AVOSCloud.initialize(context, appId, appKey, api);
+    AVIMOptions.getGlobalOptions().setUnreadNotificationEnabled(true);
+    this.setConversationEventHandler();
     initFlutterChannels();
   }
 
@@ -217,8 +229,6 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
    * @param clientId
    */
   private void setPushSetting(String clientId){
-
-    PushService.setAutoWakeUp(true);
     PushService.setDefaultChannelId(context, "default");//这个channel和订阅的channel不一样，只能为default
     PushService.subscribe(context,clientId,activity.getClass()); //订阅频道,这一步必须，否则无法收到推送
     PushService.setDefaultPushCallback(context,activity.getClass());
@@ -244,16 +254,15 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   }
   /*
    * 接收会话handler
+   * 接收消息handle
    */
-  private void setConversationEventHandler(EventChannel.EventSink conversationEventCallback){
-    AVIMMessageManager.setConversationEventHandler(new LCConversationEventHandler(conversationEventCallback));
-  }
+  private void setConversationEventHandler(){
+    conversationEventHandler = new LCConversationEventHandler();
+    messageHandler = new LCMessageHandler();
 
-  /*
-   * 接收消息handler
-   */
-  private void setConversationMessageEventHandler(EventChannel.EventSink messageEventCallback){
-    AVIMMessageManager.registerDefaultMessageHandler(new LCMessageHandler(messageEventCallback));
+    AVIMMessageManager.setConversationEventHandler(conversationEventHandler);
+    AVIMMessageManager.registerDefaultMessageHandler(messageHandler);
+
   }
 
 
@@ -278,6 +287,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
                   // 创建成功
                   System.out.println("会话创建成功");
                   conversation = con;
+                  conversation.read();
                   queryHistoryConversationMessages(10,null,0);
                 }
               }
@@ -288,13 +298,13 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
 
     if (messageType == AVIMMessageType.TEXT_MESSAGE_TYPE) {
-        this.sendMessage(text);
+      this.sendMessage(text);
     }else if(messageType == AVIMMessageType.IMAGE_MESSAGE_TYPE){
-        this.sendImageMessage(text,file);
+      this.sendImageMessage(text,file);
     }else if(messageType == AVIMMessageType.AUDIO_MESSAGE_TYPE){
-        this.sendAudioMessage(text,file);
+      this.sendAudioMessage(text,file);
     }else if(messageType == AVIMMessageType.VIDEO_MESSAGE_TYPE){
-        this.sendVideoMessage(text,file);
+      this.sendVideoMessage(text,file);
     }
   }
 
@@ -303,7 +313,10 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
     AVIMTextMessage msg = new AVIMTextMessage();
     msg.setText(text);
 
-    conversation.sendMessage(msg, new AVIMConversationCallback() {
+    AVIMMessageOption option = new AVIMMessageOption();
+    String pushMessage = "{\"alert\":\"您有一条未读的消息\"}";
+    option.setPushData(pushMessage);
+    conversation.sendMessage(msg,option,new AVIMConversationCallback() {
       @Override
       public void done(AVIMException e) {
         if (e == null) {
@@ -399,6 +412,8 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
     AVIMConversationsQuery query = this.client.getConversationsQuery();
     query.limit(limit);
     query.skip(offset);
+    query.setQueryPolicy(AVQuery.CachePolicy.NETWORK_ELSE_CACHE);
+    query.setCacheMaxAge(24 * 60 * 60);
     query.setWithLastMessagesRefreshed(true);
     query.findInBackground(new AVIMConversationQueryCallback() {
       @Override
@@ -422,18 +437,19 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
       SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       String dateString = formatter.format(con.getLastMessageAt());
-
       Map<String, Object> dic = new HashMap<>();
       dic.put("conversationId", con.getConversationId());
-      dic.put("clientId", con.getCreator());
       dic.put("members", con.getMembers());
+      dic.put("clientId", this.client.getClientId());
       dic.put("unreadMessagesCount", con.getUnreadMessagesCount());
       dic.put("lastMessage", con.getLastMessage().getContent());
       dic.put("lastMessageAt", dateString);
       conversations.add(dic);
     }
 
-    conversationEventCallback.success(conversations);
+    if (conversationEventCallback != null){
+      conversationEventCallback.success(conversations);
+    }
   }
 
   private void convertConversationMessagesToFlutterArray(List<AVIMMessage> mess) {
@@ -454,7 +470,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
       messages.add(dic);
     }
 
-    messageEventCallback.success(messages);
+    if (messageEventCallback != null){
+      messageEventCallback.success(messages);
+    }
   }
 
 
@@ -467,7 +485,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
               public void onListen(Object arguments, EventChannel.EventSink events) {
                 if (events != null) {
                   conversationEventCallback = events;
-                  setConversationEventHandler(events);
+                  conversationEventHandler.conversationEventCallback = events;
                 }
               }
 
@@ -489,7 +507,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
               public void onListen(Object arguments, EventChannel.EventSink events) {
                 if (events != null) {
                   messageEventCallback = events;
-                  setConversationMessageEventHandler(events);
+                  messageHandler.messageEventCallback = events;
                 }
               }
 

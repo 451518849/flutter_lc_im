@@ -68,7 +68,24 @@ class _ConversationListState extends State<ImConversationListPage> {
 
   void _loadData(List<ImConversation> conversations) {
     setState(() {
-      _conversations = conversations;
+      if (conversations.length == 1) {
+        //是否是更新未读消息的数据
+        bool isUpdateUnreadMessage = false;
+        for (var conversation in _conversations) {
+          if (conversations[0].conversationId == conversation.conversationId) {
+            conversation.unreadMessagesCount =
+                conversations[0].unreadMessagesCount;
+            conversation.lastMessage = conversations[0].lastMessage;
+            isUpdateUnreadMessage = true;
+            break;
+          }
+        }
+        if (!isUpdateUnreadMessage) {
+          _conversations = conversations;
+        }
+      } else {
+        _conversations = conversations;
+      }
       _refreshController.refreshCompleted();
     });
 

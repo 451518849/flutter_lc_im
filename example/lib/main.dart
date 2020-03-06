@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:io';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
-import 'package:flutter_lc_im_example/model/conversation.dart';
-import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/model/user.dart';
 import 'package:flutter_lc_im_example/page/conversation.dart';
 
@@ -21,8 +17,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    FlutterLcIm.register("-gzGzoHsz",
-        "5HdoMlbpdLVf", "https://leancloud.xxx.com");
+    FlutterLcIm.register("uAsHYp2qXIhJ6SYB88ehVXCr-gzGzoHsz",
+        "5HdoMlbpmaKDfs7H4blpdLVf", "https://leancloud.findxz.com");
     FlutterLcIm.login("1");
   }
 

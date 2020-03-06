@@ -32,6 +32,9 @@ class ImConversationPage extends StatefulWidget {
 }
 
 class _ImConversationPageState extends State<ImConversationPage> {
+  static const EventChannel _messageEventChannel =
+      EventChannel(CONVERSATION_MESSAGE_CHANNEL);
+
   final TextEditingController _textController = TextEditingController();
   FocusNode _focusNode = FocusNode(); // 初始化一个FocusNode控件
   RefreshController _refreshController =
@@ -59,8 +62,6 @@ class _ImConversationPageState extends State<ImConversationPage> {
     {'name': '相册', 'icon': Icons.photo_size_select_actual},
     {'name': '拍摄', 'icon': Icons.camera_alt}
   ];
-  static const _messageEventChannel =
-      EventChannel(CONVERSATION_MESSAGE_CHANNEL);
 
   int _limit = 10; //一次加载10条数据
 
@@ -100,8 +101,8 @@ class _ImConversationPageState extends State<ImConversationPage> {
 
   @override
   void dispose() {
-    _focusNode.removeListener(_focusNodeListener); // 页面消失时必须取消这个listener！！
     super.dispose();
+    _focusNode.removeListener(_focusNodeListener); // 页面消失时必须取消这个listener！！
   }
 
   void _setConversationMessageChannel() {
@@ -446,7 +447,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
   }
 
   void _scrollToBottom({double offset = 0, int milliseconds = 100}) {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(Duration(milliseconds: 300), () {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent + offset,
         curve: Curves.easeOut,

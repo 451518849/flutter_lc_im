@@ -17,11 +17,11 @@ class ImConversation {
   final String clientId;
   final String username;
   final String peerId;
-  final int unreadMessagesCount;
+  int unreadMessagesCount;
   final String lastMessageAt;
   String peerName;
   String peerAvatarUrl; // 这个是对方的头像,需要到自己的服务器上获取，然后重新赋值
-  final ImMessage lastMessage;
+  ImMessage lastMessage;
 
   ImConversation(
       {this.conversationId,
