@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/view/avatar.dart';
@@ -107,7 +109,7 @@ class ImMessageItemView extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () => _pushToFullImage(context, message.url),
+              onTap: () => _pushToFullImage(context, message.url,message.image),
               child: Container(
                 height: 200,
                 width: 200,
@@ -130,7 +132,7 @@ class ImMessageItemView extends StatelessWidget {
       );
     } else {
       return GestureDetector(
-        onTap: () => _pushToFullImage(context, message.url),
+        onTap: () => _pushToFullImage(context, message.url,message.image),
         child: Container(
           margin: const EdgeInsets.only(right: 10, top: 10),
           child: Row(
@@ -162,11 +164,12 @@ class ImMessageItemView extends StatelessWidget {
     }
   }
 
-  void _pushToFullImage(BuildContext context, String url) {
+  void _pushToFullImage(BuildContext context, String url, File image) {
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => MessageGalleryView(
+                image: image,
                 backgroundDecoration:
                     const BoxDecoration(color: Colors.black87),
                 url: url)));
