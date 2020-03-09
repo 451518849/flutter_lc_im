@@ -3,6 +3,8 @@ import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/view/avatar.dart';
 import 'package:bubble/bubble.dart';
 
+import 'message_gallery.dart';
+
 const int MessageLeftAlign = 1;
 const int MessageRightAlign = 2;
 
@@ -27,14 +29,14 @@ class ImMessageItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _messageView();
+    return _messageView(context);
   }
 
-  Widget _messageView() {
+  Widget _messageView(BuildContext context) {
     if (message.messageType == ImMessageType.text) {
       return _textMessage();
     } else if (message.messageType == ImMessageType.image) {
-      return _imageMessage();
+      return _imageMessage(context);
     } else if (message.messageType == ImMessageType.audio) {
     } else if (message.messageType == ImMessageType.video) {}
     return SizedBox();
@@ -93,7 +95,7 @@ class ImMessageItemView extends StatelessWidget {
     }
   }
 
-  Widget _imageMessage() {
+  Widget _imageMessage(BuildContext context) {
     if (this.messageAlign == MessageLeftAlign) {
       return Container(
         margin: const EdgeInsets.only(left: 10, top: 10),
@@ -104,19 +106,22 @@ class ImMessageItemView extends StatelessWidget {
                 avatarUrl: this.avatarUrl,
               ),
             ),
-            Container(
-              height: 200,
-              width: 200,
-              margin: const EdgeInsets.only(bottom: 10, left: 4),
-              child: Bubble(
-                stick: true,
-                nip: BubbleNip.leftBottom,
-                color: Colors.white,
-                child: Image(
-                  image: message.image != null
-                      ? FileImage(message.image)
-                      : NetworkImage(message.url + ImageSize),
-                  fit: BoxFit.cover,
+            GestureDetector(
+              onTap: () => _pushToFullImage(context, message.url),
+              child: Container(
+                height: 200,
+                width: 200,
+                margin: const EdgeInsets.only(bottom: 10, left: 4),
+                child: Bubble(
+                  stick: true,
+                  nip: BubbleNip.leftBottom,
+                  color: Colors.white,
+                  child: Image(
+                    image: message.image != null
+                        ? FileImage(message.image)
+                        : NetworkImage(message.url + ImageSize),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -124,33 +129,46 @@ class ImMessageItemView extends StatelessWidget {
         ),
       );
     } else {
-      return Container(
-        margin: const EdgeInsets.only(right: 10, top: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            Container(
-              height: 200,
-              width: 200,
-              margin: const EdgeInsets.only(bottom: 10, right: 4),
-              child: Bubble(
-                stick: true,
-                nip: BubbleNip.rightBottom,
-                color: color,
-                child: Image(
-                  image: message.image != null
-                      ? FileImage(message.image)
-                      : NetworkImage(message.url + ImageSize),
-                  fit: BoxFit.cover,
+      return GestureDetector(
+        onTap: () => _pushToFullImage(context, message.url),
+        child: Container(
+          margin: const EdgeInsets.only(right: 10, top: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                height: 200,
+                width: 200,
+                margin: const EdgeInsets.only(bottom: 10, right: 4),
+                child: Bubble(
+                  stick: true,
+                  nip: BubbleNip.rightBottom,
+                  color: color,
+                  child: Image(
+                    image: message.image != null
+                        ? FileImage(message.image)
+                        : NetworkImage(message.url + ImageSize),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              child: ImAvatar(avatarUrl: this.avatarUrl),
-            ),
-          ],
+              Container(
+                child: ImAvatar(avatarUrl: this.avatarUrl),
+              ),
+            ],
+          ),
         ),
       );
     }
+  }
+
+  void _pushToFullImage(BuildContext context, String url) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MessageGalleryView(
+                backgroundDecoration:
+                    const BoxDecoration(color: Colors.black87),
+                url: url)));
   }
 }

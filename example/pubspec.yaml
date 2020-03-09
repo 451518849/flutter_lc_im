@@ -25,6 +25,7 @@ dev_dependencies:
   pull_to_refresh: ^1.5.7
   image_picker: ^0.6.3+4
   shared_preferences: ^0.5.4+1
+  photo_view: ^0.9.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
