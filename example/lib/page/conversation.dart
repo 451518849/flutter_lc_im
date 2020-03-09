@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/model/user.dart';
+import 'package:flutter_lc_im_example/view/emoji/emoji_picker.dart';
 import 'package:flutter_lc_im_example/view/message.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -151,6 +152,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
       Future.delayed(Duration(milliseconds: 100), () {
         setState(() {
           _isShowExpaned = false;
+          _isShowEmoji = false;
           _scrollToBottom();
         });
       });
@@ -177,7 +179,8 @@ class _ImConversationPageState extends State<ImConversationPage> {
                     FocusScope.of(context).requestFocus(FocusNode());
                   } else {
                     setState(() {
-                      this._isShowExpaned = false;
+                      _isShowExpaned = false;
+                      _isShowEmoji = false;
                     });
                   }
                 },
@@ -205,6 +208,12 @@ class _ImConversationPageState extends State<ImConversationPage> {
                   BoxDecoration(color: Color.fromRGBO(241, 243, 244, 0.9)),
             ),
             Divider(height: 1.0),
+            !_isShowEmoji
+                ? SizedBox()
+                : Container(
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(241, 243, 244, 0.9)),
+                    child: _buildEmojiPanelComposer()),
             !_isShowExpaned
                 ? SizedBox()
                 : Container(
@@ -258,7 +267,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
               ),
             ),
             GestureDetector(
-              onTap: () => _openExpandedAction(context),
+              onTap: () => _openEmojiAction(context),
               child: Container(
                   margin: const EdgeInsets.only(left: 10),
                   child: Image.asset('assets/images/emoji.png',
@@ -286,6 +295,21 @@ class _ImConversationPageState extends State<ImConversationPage> {
       messageAlign: message.ioType == ImMessageIOType.messageIOTypeOut
           ? MessageRightAlign
           : MessageLeftAlign,
+    );
+  }
+
+/*
+ * 下方的弹出emoji
+ */
+  Widget _buildEmojiPanelComposer() {
+    return EmojiPicker(
+      rows: 3,
+      columns: 7,
+      recommendKeywords: ["racing", "horse"],
+      numRecommended: 10,
+      onEmojiSelected: (emoji, category) {
+        _textController.text = _textController.text + emoji.emoji;
+      },
     );
   }
 
@@ -340,6 +364,30 @@ class _ImConversationPageState extends State<ImConversationPage> {
   }
 
   /*
+   * 点击 emoji 图标 
+   */
+  void _openEmojiAction(BuildContext context) {
+    if (this._focusNode.hasFocus) {
+      FocusScope.of(context).requestFocus(FocusNode());
+
+      //Focus和setState冲突，延迟执行setState
+      Future.delayed(Duration(milliseconds: 100), () {
+        setState(() {
+          _isShowEmoji = !_isShowEmoji;
+          _isShowExpaned = false;
+          _scrollToBottom();
+        });
+      });
+    } else {
+      setState(() {
+        _isShowEmoji = !_isShowEmoji;
+        _isShowExpaned = false;
+        _scrollToBottom();
+      });
+    }
+  }
+
+  /*
    * 点击 + 图标 
    */
   void _openExpandedAction(BuildContext context) {
@@ -350,12 +398,15 @@ class _ImConversationPageState extends State<ImConversationPage> {
       Future.delayed(Duration(milliseconds: 100), () {
         setState(() {
           _isShowExpaned = !_isShowExpaned;
+          _isShowEmoji = false;
+
           _scrollToBottom();
         });
       });
     } else {
       setState(() {
         _isShowExpaned = !_isShowExpaned;
+        _isShowEmoji = false;
         _scrollToBottom();
       });
     }
