@@ -1,6 +1,10 @@
 String tranFormatTime(int timestamp) {
+  if (timestamp == 0 || timestamp == null) {
+    return "";
+  }
   var date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  String formatTime = '${date.year}-${date.month}-${date.day} ${date.hour}:${date.minute}';
+  String formatTime =
+      '${date.year}-${date.month}-${date.day} ${date.hour}:${date.minute}';
   return formatTime;
 }
 

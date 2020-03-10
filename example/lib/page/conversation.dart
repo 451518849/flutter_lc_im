@@ -8,6 +8,7 @@ import 'package:flutter_lc_im_example/utils/date.dart';
 import 'package:flutter_lc_im_example/view/emoji/emoji_picker.dart';
 import 'package:flutter_lc_im_example/view/message.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
+import 'package:flutter_lc_im_example/view/voice/voice.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -49,8 +50,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
   //控制是否显示emoji
   bool _isShowEmoji = false;
 
-//键盘谈起来滑动的距离
-  double _keyboardHeight = 300;
+  bool _isShowVoice = true;
 
 //弹起工具栏的高度
   double _expandedPanelHeight = 200;
@@ -240,33 +240,56 @@ class _ImConversationPageState extends State<ImConversationPage> {
         margin: const EdgeInsets.only(top: 5, bottom: 5),
         child: Row(
           children: <Widget>[
-            Container(
-                margin: const EdgeInsets.only(left: 10, right: 10),
-                child: Image.asset(
-                  'assets/images/voice.png',
-                  height: 24,
-                  width: 24,
-                )),
-            Flexible(
-              child: Container(
-                margin: const EdgeInsets.only(top: 2, bottom: 2),
-                child: TextField(
-                  textInputAction: TextInputAction.send,
-                  controller: _textController,
-                  focusNode: _focusNode,
-                  onSubmitted: _submitMsg,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.all(10.0),
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
+            _isShowVoice
+                ? GestureDetector(
+                    onTap: () => _openVoiceAction(context),
+                    child: Container(
+                        margin: const EdgeInsets.only(left: 10, right: 10),
+                        child: Image.asset(
+                          'assets/images/voice.png',
+                          height: 24,
+                          width: 24,
+                        )),
+                  )
+                : GestureDetector(
+                    onTap: () => _openKeyboardAction(context),
+                    child: Container(
+                        margin: const EdgeInsets.only(left: 8, right: 8),
+                        child: Image.asset(
+                          'assets/images/keyboard.png',
+                          height: 28,
+                          width: 28,
+                        )),
+                  ),
+            _isShowVoice
+                ? Flexible(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 2, bottom: 2),
+                      child: TextField(
+                        textInputAction: TextInputAction.send,
+                        controller: _textController,
+                        focusNode: _focusNode,
+                        onSubmitted: _submitMsg,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.all(10.0),
+                          fillColor: Colors.white,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Expanded(
+                    child: VoiceWidget(
+                      startRecord: () {},
+                      stopRecord: (path, length) {
+                        _submitAudioMsg("", File(path));
+                      },
                     ),
                   ),
-                ),
-              ),
-            ),
             GestureDetector(
               onTap: () => _openEmojiAction(context),
               child: Container(
@@ -384,6 +407,32 @@ class _ImConversationPageState extends State<ImConversationPage> {
   }
 
   /*
+   * 点击 语音 图标 
+   */
+  void _openVoiceAction(BuildContext context) {
+    _isShowExpaned = false;
+    _isShowEmoji = false;
+    _isShowVoice = false;
+    if (this._focusNode.hasFocus) {
+      FocusScope.of(context).requestFocus(FocusNode());
+    }
+    setState(() {});
+  }
+
+  /*
+   * 点击 键盘 图标 
+   */
+  void _openKeyboardAction(BuildContext context) {
+    _isShowExpaned = false;
+    _isShowEmoji = false;
+    _isShowVoice = true;
+    if (this._focusNode.hasFocus) {
+      FocusScope.of(context).requestFocus(FocusNode());
+    }
+    setState(() {});
+  }
+
+  /*
    * 点击 emoji 图标 
    */
   void _openEmojiAction(BuildContext context) {
@@ -395,6 +444,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
         setState(() {
           _isShowEmoji = !_isShowEmoji;
           _isShowExpaned = false;
+          _isShowVoice = false;
           _scrollToBottom();
         });
       });
@@ -402,6 +452,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
       setState(() {
         _isShowEmoji = !_isShowEmoji;
         _isShowExpaned = false;
+        _isShowVoice = false;
         _scrollToBottom();
       });
     }
@@ -419,7 +470,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
         setState(() {
           _isShowExpaned = !_isShowExpaned;
           _isShowEmoji = false;
-
+          _isShowVoice = false;
           _scrollToBottom();
         });
       });
@@ -427,6 +478,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
       setState(() {
         _isShowExpaned = !_isShowExpaned;
         _isShowEmoji = false;
+        _isShowVoice = false;
         _scrollToBottom();
       });
     }
@@ -495,6 +547,31 @@ class _ImConversationPageState extends State<ImConversationPage> {
   /*
   * 发送视频+文字消息 
   */
+  void _submitAudioMsg(String text, File auido) async {
+    if (auido == null) {
+      return;
+    }
+
+    ImMessage message = ImMessage(
+        fromUser: widget.currentUser,
+        toUser: widget.toUser,
+        text: text,
+        url: auido.path,
+        ioType: ImMessageIOType.messageIOTypeOut,
+        messageType: ImMessageType.audio);
+    setState(() {
+      _messages.add(message);
+    });
+
+    _scrollToBottom();
+
+    //发送到服务器
+    FlutterLcIm.sendMessage(text, auido.readAsBytesSync(), ImMessageType.audio);
+  }
+
+  /*
+  * 发送视频+文字消息 
+  */
   void _submitVideoMsg(String text, File video) async {
     if (video == null) {
       return;
@@ -504,7 +581,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
         fromUser: widget.currentUser,
         toUser: widget.toUser,
         text: text,
-        image: video,
+        video: video,
         ioType: ImMessageIOType.messageIOTypeOut,
         messageType: ImMessageType.video);
     setState(() {

@@ -39,6 +39,8 @@ class ImMessage {
   final int messageType;
   final int ioType;
   final File image;
+  final File audio;
+  final File video;
   final Map<String, dynamic>
       attributes; // 如果最后一条消息是当前用户，则attributes中包含用户的姓名，否则为空
   ImMessage(
@@ -48,6 +50,8 @@ class ImMessage {
       this.toUser,
       this.text,
       this.url,
+      this.audio,
+      this.video,
       this.image,
       this.ioType,
       this.timestamp,
@@ -61,6 +65,7 @@ class ImMessage {
     if (contentMap['_lctype'] < ImMessageType.text) {
       url = contentMap['_lcfile']['url'];
     }
+    print(jsonMap);
     return ImMessage(
         conversationId: jsonMap['conversationId'],
         messageId: jsonMap['messageId'],
