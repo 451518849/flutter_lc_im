@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/model/user.dart';
+import 'package:flutter_lc_im_example/utils/date.dart';
 import 'package:flutter_lc_im_example/view/emoji/emoji_picker.dart';
 import 'package:flutter_lc_im_example/view/message.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
@@ -195,7 +196,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
                     physics: BouncingScrollPhysics(),
                     itemCount: _messages.length,
                     itemBuilder: (context, i) {
-                      return _buildMessageRow(_messages[i]);
+                      return _buildMessageRow(_messages[i], i);
                     },
                   ),
                 ),
@@ -286,15 +287,34 @@ class _ImConversationPageState extends State<ImConversationPage> {
     );
   }
 
-  Widget _buildMessageRow(ImMessage message) {
-    return ImMessageItemView(
-      message: message,
-      avatarUrl: message.ioType == ImMessageIOType.messageIOTypeOut
-          ? widget.currentUser.avatarUrl
-          : widget.toUser.avatarUrl,
-      messageAlign: message.ioType == ImMessageIOType.messageIOTypeOut
-          ? MessageRightAlign
-          : MessageLeftAlign,
+  Widget _buildMessageRow(ImMessage message, int index) {
+    bool isShowMessageTime = index % _limit == 0 ? true : false;
+    return Column(
+      children: <Widget>[
+        isShowMessageTime
+            ? _buildMessageTime(tranFormatTime(message.timestamp))
+            : SizedBox(),
+        ImMessageItemView(
+          message: message,
+          avatarUrl: message.ioType == ImMessageIOType.messageIOTypeOut
+              ? widget.currentUser.avatarUrl
+              : widget.toUser.avatarUrl,
+          messageAlign: message.ioType == ImMessageIOType.messageIOTypeOut
+              ? MessageRightAlign
+              : MessageLeftAlign,
+        )
+      ],
+    );
+  }
+
+  Widget _buildMessageTime(String time) {
+    return Container(
+      alignment: Alignment.center,
+      width: 100.0,
+      child: Text(
+        time,
+        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+      ),
     );
   }
 
