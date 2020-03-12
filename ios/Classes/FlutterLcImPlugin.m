@@ -2,6 +2,9 @@
 #import "FlutterLcImPlugin.h"
 #import <AVOSCloud/AVOSCloud.h>
 #import <AVOSCloudIM/AVOSCloudIM.h>
+#import "XFMessage.h"
+#import "AVIMConversation+Send.h"
+#import "AVIMTypedMessage+Send.h"
 
 static BOOL isRegister                            = false;
 static NSObject<FlutterBinaryMessenger>* messager = nil;
@@ -76,23 +79,48 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         
     }else if([@"createConversation" isEqualToString:call.method]){
 
-        NSString *clientId = call.arguments[@"client_id"];
         NSString *peerId   = call.arguments[@"peer_id"];
+        int  limit          = [call.arguments[@"limit"] intValue];
+
+        [self createConversationWithPeerId:peerId limit:limit];
         
-        [self createConversationWithClientId:clientId
-                                      peerId:peerId];
-        
-    }else if([@"sendMessage" isEqualToString:call.method]){
+    }else if([@"sendTextMessage" isEqualToString:call.method]){
         
         NSString *text                       = call.arguments[@"text"];
-        int messageType                      = [call.arguments[@"messageType"] intValue];
-        FlutterStandardTypedData* fileBuffer = (FlutterStandardTypedData*)call.arguments[@"file"];
+        NSDictionary *attributes = call.arguments[@"attributes"];
+
+        XFMessage *message = [[XFMessage alloc] initWithText:text
+                                                   timestamp:0
+                                                   messageId:nil
+                                                  attributes:attributes];
+        [self.conversation sendMessage:message];
+
+    }else if([@"sendVoiceMessage" isEqualToString:call.method]){
         
-        if ((NSNull *)fileBuffer ==  [NSNull null]) {
-            [self sendMessage:text file:nil messageType:messageType];
-        }else {
-            [self sendMessage:text file:fileBuffer.data messageType:messageType];
-        }
+        NSString *path           = call.arguments[@"path"];
+        NSString *duration       = call.arguments[@"duration"];
+        NSDictionary *attributes = call.arguments[@"attributes"];
+
+        XFMessage *message = [[XFMessage alloc] initWithVoicePath:path
+                                                    voiceDuration:duration
+                                                        timestamp:0
+                                                        messageId:nil
+                                                       attributes:attributes];
+
+        [self.conversation sendMessage:message];
+
+    }else if([@"sendVideoMessage" isEqualToString:call.method]){
+        
+        NSString *path     = call.arguments[@"path"];
+        NSDictionary *attributes = call.arguments[@"attributes"];
+
+        XFMessage *message = [[XFMessage alloc] initWithVideoPath:path
+                                                        timestamp:0
+                                                        messageId:nil
+                                                       attributes:attributes];
+        
+        [self.conversation sendMessage:message];
+
 
     }else if([@"queryHistoryConversationMessages" isEqualToString:call.method]){
         
@@ -100,17 +128,21 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         NSString *messageId = call.arguments[@"message_id"];
         int64_t timestamp   = [call.arguments[@"timestamp"] integerValue];
         
-        [self queryHistoryConversationMessages:limit
-                                     messageId:messageId
-                                     timestamp:timestamp];
+        [AVIMTypedMessage queryHistoryMessagesWithConversation:self.conversation
+                                                         limit:limit messageId:messageId
+                                                     timestamp:timestamp
+                                                      callback:messageEventBlock];
         
     }else if([@"queryHistoryConversations" isEqualToString:call.method]){
         
         int limit  = [call.arguments[@"limit"] intValue];
         int offset = [call.arguments[@"offset"] intValue];
         
-        [self findClientConversations:limit
-                               offset:offset];
+        [self.conversation findConversationsWithClient:self.client
+                                                 limit:limit
+                                                offset:offset
+                                               callback:conversationEventBlock];
+
     }
     else {
         result(FlutterMethodNotImplemented);
@@ -152,10 +184,10 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
 /**
   建立单聊会话
  */
-- (void)createConversationWithClientId:(NSString *)clientId peerId:(NSString *)peerId {
+- (void)createConversationWithPeerId:(NSString *)peerId limit:(int)limit{
     __weak __typeof(self) weakSelf = self;
     
-    [self.client createConversationWithName:[NSString stringWithFormat:@"%@&%@",clientId,peerId]
+    [self.client createConversationWithName:[NSString stringWithFormat:@"%@&%@",self.client.clientId,peerId]
                              clientIds:@[peerId]
                                  attributes:@{@"type":@(LCCKConversationTypeSingle)}
                                     options:AVIMConversationOptionUnique
@@ -165,195 +197,16 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
             NSLog(@"会话创建成功");
             weakSelf.conversation = conversation;
             [weakSelf.conversation readInBackground];
-            [weakSelf queryHistoryConversationMessages:10 messageId:nil timestamp:0];
+            [AVIMTypedMessage queryHistoryMessagesWithConversation:conversation
+                                                             limit:limit
+                                                         messageId:nil
+                                                         timestamp:0
+                                                          callback:messageEventBlock];
+            
         }
     }];
 }
 
--(void)findClientConversations:(int)limit offset:(int)offset {
-    AVIMConversationQuery *query = [self.client conversationQuery];
-    query.limit       = limit;
-    query.skip        = offset;
-    query.option      = AVIMConversationQueryOptionWithMessage;
-    query.cachePolicy = kAVCachePolicyNetworkElseCache;
-    query.cacheMaxAge = 24 * 60 * 60; //缓存一天
-    
-    [query findConversationsWithCallback:^(NSArray<AVIMConversation *> * _Nullable conversations,
-                                           NSError * _Nullable error) {
-        
-//        NSLog(@"消息列表:%@",conversations);
-//        NSLog(@"error:%@",error);
-        [self sendConversationsToFlutter:conversations];
-    }];
-}
-
-/**
-  发送消息
- */
-- (void)sendMessage:(NSString *)text file:(NSData *)data messageType:(int)messageType{
-    
-    if (messageType == kAVIMMessageMediaTypeText) {
-        [self sendMessage:text];
-    }else if(messageType == kAVIMMessageMediaTypeImage){
-        [self sendMessage:text image:data];
-    }else if(messageType == kAVIMMessageMediaTypeAudio){
-        [self sendMessage:text audio:data];
-    }else if(messageType == kAVIMMessageMediaTypeVideo){
-        [self sendMessage:text video:data];
-    }
-}
-
-/**
-  发送文本消息
- */
-- (void)sendMessage:(NSString *)text{
-    AVIMTextMessage *message  = [AVIMTextMessage messageWithText:text attributes:nil];
-    AVIMMessageOption *option = [[AVIMMessageOption alloc] init];
-    option.pushData           = @{@"alert" : @"您有一条未读消息"};
-
-    [self.conversation sendMessage:message option:option callback:^(BOOL succeeded, NSError *error) {
-      if (succeeded) {
-        NSLog(@"发送成功！");
-          
-      }
-    }];
-}
-
-/**
-  发送图片消息
- */
-- (void)sendMessage:(NSString *)text image:(NSData *)image{
-    
-    AVFile *file              = [AVFile fileWithData:image];
-    AVIMImageMessage *message = [AVIMImageMessage messageWithText:text file:file attributes:nil];
-    AVIMMessageOption *option = [[AVIMMessageOption alloc] init];
-    option.pushData           = @{@"alert" : @"您有一条未读消息"};
-
-    [self.conversation sendMessage:message option:option callback:^(BOOL succeeded, NSError *error) {
-      if (succeeded) {
-        NSLog(@"发送成功！");
-          
-      }
-    }];
-
-}
-
-/**
-  发送音频消息
- */
-- (void)sendMessage:(NSString *)text audio:(NSData *)audio{
-    
-    AVFile *file              = [AVFile fileWithData:audio];
-    AVIMAudioMessage *message = [AVIMAudioMessage messageWithText:text file:file attributes:nil];
-    AVIMMessageOption *option = [[AVIMMessageOption alloc] init];
-    option.pushData           = @{@"alert" : @"您有一条未读消息"};
-
-    [self.conversation sendMessage:message option:option callback:^(BOOL succeeded, NSError *error) {
-      if (succeeded) {
-        NSLog(@"发送成功！");
-          
-      }
-    }];
-}
-
-/**
-  发送音频消息
- */
-- (void)sendMessage:(NSString *)text video:(NSData *)video{
-    
-    AVFile *file = [AVFile fileWithData:video];
-    AVIMVideoMessage *message = [AVIMVideoMessage messageWithText:text file:file attributes:nil];
-    
-    [self.conversation sendMessage:message callback:^(BOOL succeeded, NSError *error) {
-      if (succeeded) {
-        NSLog(@"发送成功！");
-      }
-    }];
-}
-
-
-
-/**
-  查询聊天记录
- */
--(void)queryHistoryConversationMessages:(int)limit
-                              messageId:(NSString *)messageId
-                              timestamp:(int64_t)sendTimestamp{
-
-    __weak __typeof(self) weakSelf = self;
-
-    if (messageId == nil) {
-        /**
-         第一次查询会话记录
-        */
-        [self.conversation queryMessagesWithLimit:limit callback:^(NSArray<AVIMMessage *> *messages, NSError *error) {
-
-            [weakSelf sendMessagesToFlutter:messages];
-        }];
-    }else {
-        /**
-        第二次或以上查询，需要根据上一次的查询结果进行查询
-        */
-
-        [self.conversation queryMessagesBeforeId:messageId
-                                            timestamp:sendTimestamp
-                                                limit:limit
-                                             callback:^(NSArray<AVIMMessage *> *messagesInPage, NSError *error) {
-
-             [weakSelf sendMessagesToFlutter:messagesInPage];
-         }];
-    }
-
-}
-
-
--(void)sendConversationsToFlutter:(NSArray<AVIMConversation *> *)conversations {
-    
-    NSMutableArray *array = [[NSMutableArray alloc] init];
-    
-    for (AVIMConversation *conversation in conversations) {
-
-        if(conversation.lastMessage == nil){
-            continue;
-        }
-        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-        NSString *lastMessageAt = [dateFormatter stringFromDate:conversation.lastMessageAt];
-        NSDictionary *dic       = @{@"clientId":conversation.clientId,
-                              @"conversationId":conversation.conversationId,
-                              @"lastMessageAt":lastMessageAt,
-                              @"members":conversation.members,
-                              @"unreadMessagesCount":@(conversation.unreadMessagesCount),
-                              @"lastMessage":conversation.lastMessage.content
-        };
-        [array addObject:dic];
-    }
-    if(conversationEventBlock != nil){
-        conversationEventBlock([array copy]);
-    }
-}
-
--(void)sendMessagesToFlutter:(NSArray<AVIMMessage *> *)messages {
-    
-    NSMutableArray *array = [[NSMutableArray alloc] init];
-    
-    for (AVIMMessage *message in messages) {
-
-//        [NSDate dateWithTimeIntervalSince1970:(message.sendTimestamp / 1000.0)]
-        NSDictionary *dic = @{@"messageId":message.messageId,
-                              @"clientId":message.clientId,
-                              @"conversationId":message.conversationId,
-                              @"content":message.content,
-                              @"timestamp":[NSNumber numberWithLong:message.sendTimestamp],
-                              @"mediaType":@(message.mediaType),
-                              @"ioType":@(message.ioType),
-        };
-        [array addObject:dic];
-    }
-    if(messageEventBlock != nil){
-        messageEventBlock([array copy]);
-    }
-}
 
 
 #pragma mark delegate
@@ -376,7 +229,7 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     NSLog(@"接收到消息：%@",message);
     self.conversation = conversation;
     if (message != nil) {
-        [self sendMessagesToFlutter:@[message]];
+        [AVIMTypedMessage convertMessagesToFlutterMessages:@[message] callback:messageEventBlock];
     }
 }
 
@@ -390,30 +243,10 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     NSLog(@"接收到消息：%@",message);
     self.conversation = conversation;
     if (message != nil) {
-        [self sendMessagesToFlutter:@[message]];
+        [AVIMTypedMessage convertMessagesToFlutterMessages:@[message] callback:messageEventBlock];
     }
 }
 
-- (void)conversation:(AVIMConversation *)conversation didUpdateForKey:(AVIMConversationUpdatedKey)key{
-    if ([key isEqualToString:AVIMConversationUpdatedKeyUnreadMessagesCount]) {
-        //更新未读消息
-        NSMutableArray *array          = [[NSMutableArray alloc] init];
-        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-        NSString *lastMessageAt        = [dateFormatter stringFromDate:conversation.lastMessageAt];
-        NSDictionary *dic              = @{@"clientId":conversation.clientId,
-                              @"conversationId":conversation.conversationId,
-                              @"lastMessageAt":lastMessageAt,
-                              @"members":conversation.members,
-                              @"unreadMessagesCount":@(conversation.unreadMessagesCount),
-                              @"lastMessage":conversation.lastMessage.content
-        };
-        [array addObject:dic];
-        if(conversationEventBlock != nil){
-            conversationEventBlock([array copy]);
-        }
-    }
-}
 
 - (void)imClientClosed:(nonnull AVIMClient *)imClient error:(NSError * _Nullable)error {
     

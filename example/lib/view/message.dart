@@ -197,6 +197,7 @@ class ImMessageItemView extends StatelessWidget {
               child: Container(
                 margin: const EdgeInsets.only(bottom: 10, left: 4),
                 child: Bubble(
+                  // nipWidth: message.duration / 10.0 * 50.0,
                   stick: true,
                   nip: BubbleNip.leftBottom,
                   color: Colors.white,
@@ -207,7 +208,7 @@ class ImMessageItemView extends StatelessWidget {
                         width: 20,
                         height: 20,
                       ),
-                      Container(child: Text('          ')),
+                      Container(child: Text(''' ${message.duration}'' ''')),
                     ],
                   ),
                 ),
@@ -225,14 +226,16 @@ class ImMessageItemView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Container(
+                width: 80.0 + message.duration ,
                 margin: const EdgeInsets.only(bottom: 10, right: 4),
                 child: Bubble(
                   stick: true,
                   nip: BubbleNip.rightBottom,
                   color: color,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
-                      Container(child: Text('          ')),
+                      Container(child: Text(''' ${message.duration}'' ''')),
                       Image.asset(
                         'assets/images/speak_right.png',
                         width: 20,
@@ -253,7 +256,6 @@ class ImMessageItemView extends StatelessWidget {
   }
 
   void _speakVoice(String path) async {
-    
     if (path.contains("http")) {
       await audioPlayer.play(path);
     } else {

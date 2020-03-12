@@ -41,6 +41,7 @@ class ImMessage {
   final File image;
   final File audio;
   final File video;
+  final int duration;
   final Map<String, dynamic>
       attributes; // 如果最后一条消息是当前用户，则attributes中包含用户的姓名，否则为空
   ImMessage(
@@ -50,6 +51,7 @@ class ImMessage {
       this.toUser,
       this.text,
       this.url,
+      this.duration,
       this.audio,
       this.video,
       this.image,
@@ -62,8 +64,14 @@ class ImMessage {
   factory ImMessage.fromJson(Map<dynamic, dynamic> jsonMap) {
     Map contentMap = json.decode(jsonMap['content']);
     String url = "";
+    int duration = 0;
     if (contentMap['_lctype'] < ImMessageType.text) {
       url = contentMap['_lcfile']['url'];
+      if (contentMap['_lcfile']['metaData'] != null) {
+        if (contentMap['_lcfile']['metaData']['duration'] != null) {
+          duration = contentMap['_lcfile']['metaData']['duration'].ceil();
+        }
+      }
     }
     print(jsonMap);
     return ImMessage(
@@ -73,6 +81,7 @@ class ImMessage {
         messageType: contentMap['_lctype'],
         text: contentMap['_lctext'] ?? '[暂不支持图片]',
         url: url,
+        duration: duration,
         timestamp: jsonMap['timestamp']);
   }
 

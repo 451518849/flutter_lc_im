@@ -97,7 +97,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
     //监听channel，接收消息
     _setConversationMessageChannel();
     //加入到会话中
-    FlutterLcIm.createConversation(widget.currentUser.uid, widget.toUser.uid);
+    FlutterLcIm.createConversation(widget.toUser.uid);
     _focusNode.addListener(_focusNodeListener); // 初始化一个listener
   }
 
@@ -286,7 +286,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
                     child: VoiceWidget(
                       startRecord: () {},
                       stopRecord: (path, length) {
-                        _submitAudioMsg("", File(path));
+                        _submitVoiceMsg(path, length);
                       },
                     ),
                   ),
@@ -517,7 +517,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
     // _scrollToBottom();
 
     //发送到服务器
-    FlutterLcIm.sendMessage(text, null, ImMessageType.text);
+    FlutterLcIm.sendTextMessage(text);
   }
 
   /*
@@ -547,16 +547,16 @@ class _ImConversationPageState extends State<ImConversationPage> {
   /*
   * 发送视频+文字消息 
   */
-  void _submitAudioMsg(String text, File auido) async {
-    if (auido == null) {
+  void _submitVoiceMsg(String path, double duration) async {
+    if (path == null) {
       return;
     }
 
     ImMessage message = ImMessage(
         fromUser: widget.currentUser,
         toUser: widget.toUser,
-        text: text,
-        url: auido.path,
+        url: path,
+        duration: duration.ceil(),
         ioType: ImMessageIOType.messageIOTypeOut,
         messageType: ImMessageType.audio);
     setState(() {
@@ -566,11 +566,11 @@ class _ImConversationPageState extends State<ImConversationPage> {
     _scrollToBottom();
 
     //发送到服务器
-    FlutterLcIm.sendMessage(text, auido.readAsBytesSync(), ImMessageType.audio);
+    FlutterLcIm.sendVoiceMessage(path, duration.ceil().toString());
   }
 
   /*
-  * 发送视频+文字消息 
+  * 发送视频 
   */
   void _submitVideoMsg(String text, File video) async {
     if (video == null) {
@@ -580,7 +580,6 @@ class _ImConversationPageState extends State<ImConversationPage> {
     ImMessage message = ImMessage(
         fromUser: widget.currentUser,
         toUser: widget.toUser,
-        text: text,
         video: video,
         ioType: ImMessageIOType.messageIOTypeOut,
         messageType: ImMessageType.video);
