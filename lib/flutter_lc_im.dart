@@ -29,8 +29,8 @@ class FlutterLcIm {
 
   /// 创建一个单聊会话
   /// 创建策略：根据client_id和peer_id判断服务器上是存在会话记录，如果存在则返回以前的会话，如果不存则创建新的会话。
-  /// @param client_id 当前活用的uid
   /// @param peer_id 聊天对象的uid
+  /// @param limit 加载初始化聊天信息的条数，默认10条
   static Future<dynamic> createConversation(String peerId,
       {int limit = 10}) async {
     var result = await _channel.invokeMethod('createConversation', {
@@ -40,13 +40,9 @@ class FlutterLcIm {
     return result;
   }
 
-  static Future<dynamic> sendMessage(
-      String text, Uint8List file, int messageType) async {
-    var result = await _channel.invokeMethod('sendMessage',
-        {'text': text, "file": file, "messageType": messageType});
-    return result;
-  }
-
+  /// 发送文字信息
+  /// @param text 文字
+  /// @param atrributes 自定义附带信息（可选）
   static Future<dynamic> sendTextMessage(String text,
       {Map<String, dynamic> atrributes}) async {
     var result = await _channel.invokeMethod('sendTextMessage', {
@@ -56,18 +52,40 @@ class FlutterLcIm {
     return result;
   }
 
-  static Future<dynamic> sendVoiceMessage(String path, String duration) async {
-    var result = await _channel.invokeMethod('sendVoiceMessage', {
+  /// 发送图片信息
+  /// @param path 图片路径
+  /// @param atrributes 自定义附带信息（可选）
+  static Future<dynamic> sendImageMessage(String path,
+      {Map<String, dynamic> atrributes}) async {
+    var result = await _channel.invokeMethod('sendImageMessage', {
       'path': path,
-      'duration': duration,
+      'attributes': atrributes,
     });
     return result;
   }
 
-  static Future<dynamic> sendVideoMessage(String path, int duration) async {
+  /// 发送语音信息
+  /// @param path 音频路径
+  /// @param atrributes 自定义附带信息（可选）
+  static Future<dynamic> sendVoiceMessage(String path, String duration,
+      {Map<String, dynamic> atrributes}) async {
+    var result = await _channel.invokeMethod('sendVoiceMessage', {
+      'path': path,
+      'duration': duration,
+      'attributes': atrributes,
+    });
+    return result;
+  }
+
+  /// 发送视频信息
+  /// @param path 视频路径
+  /// @param atrributes 自定义附带信息（可选）
+  static Future<dynamic> sendVideoMessage(String path,
+      {String duration = 0, Map<String, dynamic> atrributes}) async {
     var result = await _channel.invokeMethod('sendVideoMessage', {
       'path': path,
       'duration': duration,
+      'attributes': atrributes,
     });
     return result;
   }

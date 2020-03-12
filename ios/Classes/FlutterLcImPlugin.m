@@ -95,6 +95,18 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
                                                   attributes:attributes];
         [self.conversation sendMessage:message];
 
+    }else if([@"sendImageMessage" isEqualToString:call.method]){
+        
+        NSString *path                       = call.arguments[@"path"];
+        NSDictionary *attributes = call.arguments[@"attributes"];
+
+        XFMessage *message = [[XFMessage alloc] initWithPhoto:nil
+                                                    photoPath:path
+                                                    timestamp:0
+                                                    messageId:nil
+                                                   attributes:attributes];
+        [self.conversation sendMessage:message];
+
     }else if([@"sendVoiceMessage" isEqualToString:call.method]){
         
         NSString *path           = call.arguments[@"path"];

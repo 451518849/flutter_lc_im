@@ -487,10 +487,10 @@ class _ImConversationPageState extends State<ImConversationPage> {
   void _openExpandedIcon(String iconName) async {
     if (iconName == '相册') {
       var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-      _submitImageMsg(_textController.text, image);
+      _submitImageMsg(image);
     } else if (iconName == '拍摄') {
       var video = await ImagePicker.pickImage(source: ImageSource.camera);
-      _submitImageMsg(_textController.text, video);
+      _submitVideoMsg(video);
     }
   }
 
@@ -523,7 +523,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
   /*
   * 发送图片+文字消息 
   */
-  void _submitImageMsg(String text, File image) async {
+  void _submitImageMsg(File image) async {
     if (image == null) {
       return;
     }
@@ -531,7 +531,6 @@ class _ImConversationPageState extends State<ImConversationPage> {
     ImMessage message = ImMessage(
         fromUser: widget.currentUser,
         toUser: widget.toUser,
-        text: text,
         image: image,
         ioType: ImMessageIOType.messageIOTypeOut,
         messageType: ImMessageType.image);
@@ -541,7 +540,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
 
     _scrollToBottom(offset: _imageScrollHeight);
     //发送到服务器
-    FlutterLcIm.sendMessage(text, image.readAsBytesSync(), ImMessageType.image);
+    FlutterLcIm.sendImageMessage(image.path);
   }
 
   /*
@@ -556,6 +555,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
         fromUser: widget.currentUser,
         toUser: widget.toUser,
         url: path,
+        video: File(path),
         duration: duration.ceil(),
         ioType: ImMessageIOType.messageIOTypeOut,
         messageType: ImMessageType.audio);
@@ -572,7 +572,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
   /*
   * 发送视频 
   */
-  void _submitVideoMsg(String text, File video) async {
+  void _submitVideoMsg(File video) async {
     if (video == null) {
       return;
     }
@@ -590,7 +590,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
     _scrollToBottom();
 
     //发送到服务器
-    FlutterLcIm.sendMessage(text, video.readAsBytesSync(), ImMessageType.video);
+    FlutterLcIm.sendVideoMessage(video.path);
   }
 
   void _scrollToBottom({double offset = 0, int milliseconds = 100}) {
