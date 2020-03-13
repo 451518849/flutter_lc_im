@@ -59,7 +59,7 @@ Add this to your package's pubspec.yaml file:
 #### 发送图片消息
        FlutterLcIm.sendImageMessage(); 
 #### 发送语音消息
-       FlutterLcIm.sendAudioMessage(); 
+       FlutterLcIm.sendVoiceMessage(); 
 #### 发送视频消息
        FlutterLcIm.sendVideoMessage(); 
 #### 关于推送
