@@ -81,7 +81,7 @@ class FlutterLcIm {
   /// @param path 视频路径
   /// @param atrributes 自定义附带信息（可选）
   static Future<dynamic> sendVideoMessage(String path,
-      {String duration = 0, Map<String, dynamic> atrributes}) async {
+      {String duration = "0", Map<String, dynamic> atrributes}) async {
     var result = await _channel.invokeMethod('sendVideoMessage', {
       'path': path,
       'duration': duration,

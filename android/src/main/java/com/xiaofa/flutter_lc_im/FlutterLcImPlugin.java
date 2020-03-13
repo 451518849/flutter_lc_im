@@ -5,14 +5,10 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import cn.leancloud.AVFile;
 import cn.leancloud.AVInstallation;
 import cn.leancloud.AVLogger;
 import cn.leancloud.AVOSCloud;
@@ -21,21 +17,11 @@ import cn.leancloud.AVQuery;
 import cn.leancloud.im.AVIMOptions;
 import cn.leancloud.im.v2.AVIMClient;
 import cn.leancloud.im.v2.AVIMConversation;
-import cn.leancloud.im.v2.AVIMConversationsQuery;
 import cn.leancloud.im.v2.AVIMException;
-import cn.leancloud.im.v2.AVIMMessage;
 import cn.leancloud.im.v2.AVIMMessageManager;
-import cn.leancloud.im.v2.AVIMMessageOption;
 import cn.leancloud.im.v2.annotation.AVIMMessageType;
 import cn.leancloud.im.v2.callback.AVIMClientCallback;
-import cn.leancloud.im.v2.callback.AVIMConversationCallback;
 import cn.leancloud.im.v2.callback.AVIMConversationCreatedCallback;
-import cn.leancloud.im.v2.callback.AVIMConversationQueryCallback;
-import cn.leancloud.im.v2.callback.AVIMMessagesQueryCallback;
-import cn.leancloud.im.v2.messages.AVIMAudioMessage;
-import cn.leancloud.im.v2.messages.AVIMImageMessage;
-import cn.leancloud.im.v2.messages.AVIMTextMessage;
-import cn.leancloud.im.v2.messages.AVIMVideoMessage;
 import cn.leancloud.push.PushService;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -61,7 +47,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   static boolean isRegister = false;
 
   private AVIMClient client;
-  private AVIMConversation conversation;
+  private LCConversation conversation;
 
   static Context context;
   static Activity activity;
@@ -160,25 +146,83 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
       case "createConversation":
 
-        clientId = call.argument("client_id");
         String peerId = call.argument("peer_id");
-        this.createConversation(clientId, peerId);
+        int limit = call.argument("limit");
+
+        this.createConversation(peerId,limit);
         break;
 
-      case "sendMessage":
+      case "sendTextMessage":
 
         String text = call.argument("text");
-        byte[] bytes = call.argument("file");
-        int messageType = call.argument("messageType");
+        Map attributes = call.argument("attributes");
+        LCMessage message = new LCMessage();
+        message.setText(text);
+        message.setAttributes(attributes);
+        message.setMessageType(AVIMMessageType.TEXT_MESSAGE_TYPE);
+        try {
+          this.conversation.sendLcMessage(message);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        break;
 
-        this.sendMessage(text,bytes,messageType);
+      case "sendImageMessage":
+
+        String path = call.argument("path");
+        attributes = call.argument("attributes");
+        message = new LCMessage();
+        message.setPhotoPath(path);
+        message.setAttributes(attributes);
+        message.setMessageType(AVIMMessageType.IMAGE_MESSAGE_TYPE);
+        try {
+          this.conversation.sendLcMessage(message);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        break;
+
+      case "sendVoiceMessage":
+
+        path = call.argument("path");
+        String duration = call.argument("duration");
+        attributes = call.argument("attributes");
+
+        message = new LCMessage();
+        message.setVoicePath(path);
+        message.setVoiceDuration(duration);
+        message.setAttributes(attributes);
+        message.setMessageType(AVIMMessageType.AUDIO_MESSAGE_TYPE);
+        try {
+          this.conversation.sendLcMessage(message);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        break;
+
+      case "sendVideoMessage":
+
+        path = call.argument("path");
+        duration = call.argument("duration");
+        attributes = call.argument("attributes");
+
+        message = new LCMessage();
+        message.setVideoPath(path);
+        message.setVideoDuration(duration);
+        message.setAttributes(attributes);
+        message.setMessageType(AVIMMessageType.VIDEO_MESSAGE_TYPE);
+        try {
+          this.conversation.sendLcMessage(message);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
         break;
 
       case "queryHistoryConversations":
 
-        int limit = call.argument("limit");
+        limit = call.argument("limit");
         int offset = call.argument("offset");
-        this.queryHistoryConversations(limit, offset);
+        this.conversation.queryHistoryConversations(this.client,limit, offset,conversationEventCallback);
         break;
 
       case "queryHistoryConversationMessages":
@@ -186,7 +230,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         limit = call.argument("limit");
         String messageId = call.argument("message_id");
         long timestamp = call.argument("timestamp");
-        this.queryHistoryConversationMessages(limit,messageId,timestamp);
+        this.conversation.queryHistoryConversationMessages(limit,messageId,timestamp,messageEventCallback);
         break;
 
       default:
@@ -262,13 +306,10 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   private void setConversationEventHandler(){
     conversationEventHandler = new LCConversationEventHandler();
     messageHandler = new LCMessageHandler();
-
     AVIMMessageManager.setConversationEventHandler(conversationEventHandler);
     AVIMMessageManager.registerDefaultMessageHandler(messageHandler);
 
   }
-
-
 
 
   /*
@@ -281,201 +322,20 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   }
 
 
-  private void createConversation(String clientId, String peerId) {
-    this.client.createConversation(Arrays.asList(peerId), clientId + "&" + peerId, null, false, true,
+  private void createConversation(String peerId, final int limit) {
+    this.client.createConversation(Arrays.asList(peerId), this.client.getClientId() + "&" + peerId, null, false, true,
             new AVIMConversationCreatedCallback() {
               @Override
               public void done(AVIMConversation con, AVIMException e) {
                 if (e == null) {
                   // 创建成功
                   System.out.println("会话创建成功");
-                  conversation = con;
+                  conversation = new LCConversation(client,con);
                   conversation.read();
-                  queryHistoryConversationMessages(10,null,0);
+                  conversation.queryHistoryConversationMessages(10,null,0,messageEventCallback);
                 }
               }
             });
-  }
-
-  private void sendMessage(String text,byte[] file,int messageType){
-
-
-    if (messageType == AVIMMessageType.TEXT_MESSAGE_TYPE) {
-      this.sendMessage(text);
-    }else if(messageType == AVIMMessageType.IMAGE_MESSAGE_TYPE){
-      this.sendImageMessage(text,file);
-    }else if(messageType == AVIMMessageType.AUDIO_MESSAGE_TYPE){
-      this.sendAudioMessage(text,file);
-    }else if(messageType == AVIMMessageType.VIDEO_MESSAGE_TYPE){
-      this.sendVideoMessage(text,file);
-    }
-  }
-
-  private void sendMessage(String text){
-
-    AVIMTextMessage msg = new AVIMTextMessage();
-    msg.setText(text);
-
-    AVIMMessageOption option = new AVIMMessageOption();
-    String pushMessage = "{\"alert\":\"您有一条未读的消息\"}";
-    option.setPushData(pushMessage);
-    conversation.sendMessage(msg,option,new AVIMConversationCallback() {
-      @Override
-      public void done(AVIMException e) {
-        if (e == null) {
-          System.out.println("消息发送成功");
-
-        }
-      }
-    });
-  }
-
-  private void sendImageMessage(String text,byte[] image){
-
-    AVFile file = new AVFile("image",image);
-    AVIMImageMessage msg = new AVIMImageMessage(file);
-    msg.setText(text);
-
-    conversation.sendMessage(msg, new AVIMConversationCallback() {
-      @Override
-      public void done(AVIMException e) {
-        if (e == null) {
-          System.out.println("消息发送成功");
-
-        }
-      }
-    });
-  }
-
-  private void sendAudioMessage(String text,byte[] audio){
-
-    AVFile file = new AVFile("audio",audio);
-    AVIMAudioMessage msg = new AVIMAudioMessage(file);
-    msg.setText(text);
-
-    conversation.sendMessage(msg, new AVIMConversationCallback() {
-      @Override
-      public void done(AVIMException e) {
-        if (e == null) {
-          System.out.println("消息发送成功");
-
-        }
-      }
-    });
-  }
-
-  private void sendVideoMessage(String text,byte[] video){
-
-    AVFile file = new AVFile("video",video);
-    AVIMVideoMessage msg = new AVIMVideoMessage(file);
-    msg.setText(text);
-
-    conversation.sendMessage(msg, new AVIMConversationCallback() {
-      @Override
-      public void done(AVIMException e) {
-        if (e == null) {
-          System.out.println("消息发送成功");
-
-        }
-      }
-    });
-  }
-
-
-
-  private void queryHistoryConversationMessages(int limit, String messageId, long timestamp) {
-
-    if (messageId == null) {
-      this.conversation.queryMessages(limit, new AVIMMessagesQueryCallback() {
-        @Override
-        public void done(List<AVIMMessage> messages, AVIMException e) {
-          if (e == null) {
-//            System.out.println("AVIMMessage messages:"+messages);
-            convertConversationMessagesToFlutterArray(messages);
-          }
-        }
-      });
-    } else {
-      this.conversation.queryMessages(messageId, timestamp, limit,
-              new AVIMMessagesQueryCallback() {
-                @Override
-                public void done(List<AVIMMessage> messagesInPage, AVIMException e) {
-                  if (e == null) {
-                    // 查询成功返回
-//                    System.out.println("AVIMMessage messages:"+messagesInPage);
-                    convertConversationMessagesToFlutterArray(messagesInPage);
-
-                  }
-                }
-              });
-    }
-  }
-
-  private void queryHistoryConversations(int limit, int offset) {
-    AVIMConversationsQuery query = this.client.getConversationsQuery();
-    query.limit(limit);
-    query.skip(offset);
-    query.setQueryPolicy(AVQuery.CachePolicy.NETWORK_ELSE_CACHE);
-    query.setCacheMaxAge(24 * 60 * 60);
-    query.setWithLastMessagesRefreshed(true);
-    query.findInBackground(new AVIMConversationQueryCallback() {
-      @Override
-      public void done(List<AVIMConversation> convs, AVIMException e) {
-        if (e == null) {
-          // convs 就是想要的结果
-          convertConversationsToFlutterArray(convs);
-        }
-      }
-    });
-  }
-
-  private void convertConversationsToFlutterArray(List<AVIMConversation> convs) {
-
-    ArrayList conversations = new ArrayList();
-    for (AVIMConversation con : convs) {
-
-      if(con.getLastMessage() == null){
-        continue;
-      }
-
-      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-      String dateString = formatter.format(con.getLastMessageAt());
-      Map<String, Object> dic = new HashMap<>();
-      dic.put("conversationId", con.getConversationId());
-      dic.put("members", con.getMembers());
-      dic.put("clientId", this.client.getClientId());
-      dic.put("unreadMessagesCount", con.getUnreadMessagesCount());
-      dic.put("lastMessage", con.getLastMessage().getContent());
-      dic.put("lastMessageAt", dateString);
-      conversations.add(dic);
-    }
-
-    if (conversationEventCallback != null){
-      conversationEventCallback.success(conversations);
-    }
-  }
-
-  private void convertConversationMessagesToFlutterArray(List<AVIMMessage> mess) {
-
-    ArrayList messages = new ArrayList();
-    for (AVIMMessage message : mess) {
-      Map<String, Object> dic = new HashMap<>();
-      dic.put("messageId", message.getMessageId());
-      dic.put("clientId", message.getFrom());
-      dic.put("conversationId", message.getConversationId());
-      dic.put("content", message.getContent());
-      dic.put("timestamp", message.getTimestamp());
-      if (this.client.getClientId().equals(message.getFrom())){
-        dic.put("ioType", AVIMMessage.AVIMMessageIOType.AVIMMessageIOTypeOut.getIOType());
-      }else {
-        dic.put("ioType", AVIMMessage.AVIMMessageIOType.AVIMMessageIOTypeIn.getIOType());
-      }
-      messages.add(dic);
-    }
-
-    if (messageEventCallback != null){
-      messageEventCallback.success(messages);
-    }
   }
 
 

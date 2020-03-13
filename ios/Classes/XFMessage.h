@@ -13,23 +13,17 @@
 
 //文本信息
 @property (nonatomic, copy, readonly   ) NSString             *text;
-@property (nonatomic, copy, readonly   ) NSString             *systemText;
 
 //图片信息
 @property (nonatomic, strong, readwrite) UIImage              *photo;
-@property (nonatomic, strong, readwrite) UIImage              *thumbnailPhoto;
 @property (nonatomic, copy, readonly   ) NSString             *photoPath;
-@property (nonatomic, strong, readonly ) NSURL                *thumbnailURL;
-@property (nonatomic, strong, readonly ) NSURL                *originPhotoURL;
 
 //视频信息
 @property (nonatomic, strong, readonly ) UIImage              *videoConverPhoto;
 @property (nonatomic, copy, readonly   ) NSString             *videoPath;
-@property (nonatomic, strong, readonly ) NSURL                *videoURL;
 
 // 语音信息
 @property (nonatomic, copy, readonly   ) NSString             *voicePath;
-@property (nonatomic, strong, readonly ) NSURL                *voiceURL;
 @property (nonatomic, copy, readonly   ) NSString             *voiceDuration;
 
 //地理信息
