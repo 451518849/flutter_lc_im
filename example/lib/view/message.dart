@@ -25,7 +25,11 @@ class ImMessageItemView extends StatelessWidget {
   final Color color;
   final ImMessage message;
   final int messageAlign;
-  const ImMessageItemView(
+
+  bool _isVoice = false;
+  String _speakVoiceMessageId;
+
+  ImMessageItemView(
       {Key key,
       this.avatarUrl,
       this.color = const Color(0xfffdd82c),
@@ -193,7 +197,7 @@ class ImMessageItemView extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () => _speakVoice(message.url),
+              onTap: () => _speakVoice(message.messageId, message.url),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 10, left: 4),
                 child: Bubble(
@@ -219,14 +223,14 @@ class ImMessageItemView extends StatelessWidget {
       );
     } else {
       return GestureDetector(
-        onTap: () => _speakVoice(message.url),
+        onTap: () => _speakVoice(message.messageId, message.url),
         child: Container(
           margin: const EdgeInsets.only(right: 10, top: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Container(
-                width: 80.0 + message.duration ,
+                width: 80.0 + message.duration,
                 margin: const EdgeInsets.only(bottom: 10, right: 4),
                 child: Bubble(
                   stick: true,
@@ -255,7 +259,24 @@ class ImMessageItemView extends StatelessWidget {
     }
   }
 
-  void _speakVoice(String path) async {
+  void _speakVoice(String messageId, String path) {
+    if (_speakVoiceMessageId == messageId) {
+      audioPlayer.stop();
+      _isVoice = false;
+    } else {
+      if (!_isVoice) {
+        _playVoice(path);
+        _isVoice = true;
+      } else {
+        audioPlayer.stop();
+        _playVoice(path);
+        _isVoice = true;
+      }
+    }
+    _speakVoiceMessageId = messageId;
+  }
+
+  void _playVoice(String path) async {
     if (path.contains("http")) {
       await audioPlayer.play(path);
     } else {
