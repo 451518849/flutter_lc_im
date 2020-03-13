@@ -61,16 +61,18 @@
 }
 
 - (instancetype)initWithVideoPath:(NSString *)videoPath
+                    videoDuration:(NSString *)videoDuration
                         timestamp:(NSTimeInterval)timestamp
                         messageId:(NSString *)messageId
                        attributes:(NSDictionary *)attributes{
     self = [super init];
     if (self) {
-        _videoPath  = videoPath;
-        _timestamp  = timestamp;
-        _messageId  = messageId;
-        _mediaType  = kAVIMMessageMediaTypeAudio;
-        _attributes = attributes;
+        _videoPath     = videoPath;
+        _videoDuration = videoDuration;
+        _timestamp     = timestamp;
+        _messageId     = messageId;
+        _mediaType     = kAVIMMessageMediaTypeAudio;
+        _attributes    = attributes;
     }
     return self;
 }

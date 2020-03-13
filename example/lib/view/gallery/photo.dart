@@ -7,11 +7,9 @@ import 'package:photo_view/photo_view_gallery.dart';
 class MessageGalleryView extends StatefulWidget {
   MessageGalleryView({
     this.url,
-    this.image,
     this.backgroundDecoration,
   }) : pageController = PageController(initialPage: 0);
 
-  final File image;
   final String url;
   final Decoration backgroundDecoration;
   final PageController pageController;
@@ -53,9 +51,9 @@ class _MessageGalleryViewState extends State<MessageGalleryView> {
                     scrollPhysics: const BouncingScrollPhysics(),
                     builder: (BuildContext context, int index) {
                       return PhotoViewGalleryPageOptions(
-                        imageProvider: widget.image == null
+                        imageProvider: widget.url.contains("http")
                             ? NetworkImage(widget.url)
-                            : FileImage(widget.image),
+                            : FileImage(File(widget.url)),
                         initialScale: PhotoViewComputedScale.contained * 0.8,
                         heroAttributes:
                             PhotoViewHeroAttributes(tag: widget.url),

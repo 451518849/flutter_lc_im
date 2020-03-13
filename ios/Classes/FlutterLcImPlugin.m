@@ -123,10 +123,12 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
 
     }else if([@"sendVideoMessage" isEqualToString:call.method]){
         
-        NSString *path     = call.arguments[@"path"];
+        NSString *path           = call.arguments[@"path"];
         NSDictionary *attributes = call.arguments[@"attributes"];
+        NSString *duration       = call.arguments[@"duration"];
 
         XFMessage *message = [[XFMessage alloc] initWithVideoPath:path
+                                                    videoDuration:duration
                                                         timestamp:0
                                                         messageId:nil
                                                        attributes:attributes];

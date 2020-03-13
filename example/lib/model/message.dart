@@ -35,12 +35,10 @@ class ImMessage {
   final ImUser toUser;
   final String text;
   final String url;
+  String thumbnailUrl;
   final int timestamp;
   final int messageType;
   final int ioType;
-  final File image;
-  final File audio;
-  final File video;
   final int duration;
   final Map<String, dynamic>
       attributes; // 如果最后一条消息是当前用户，则attributes中包含用户的姓名，否则为空
@@ -52,9 +50,6 @@ class ImMessage {
       this.text,
       this.url,
       this.duration,
-      this.audio,
-      this.video,
-      this.image,
       this.ioType,
       this.timestamp,
       this.attributes,
@@ -79,7 +74,7 @@ class ImMessage {
         messageId: jsonMap['messageId'],
         ioType: jsonMap['ioType'],
         messageType: contentMap['_lctype'],
-        text: contentMap['_lctext'] ?? '[暂不支持图片]',
+        text: contentMap['_lctext'],
         url: url,
         duration: duration,
         timestamp: jsonMap['timestamp']);
@@ -88,12 +83,21 @@ class ImMessage {
   // 用于convetsation中读取lastMessage
   factory ImMessage.fromString(String value) {
     Map valueMap = json.decode(value);
-
+    String text = "";
+    if (valueMap['_lctype'] == ImMessageType.text) {
+      text = valueMap['_lctext'];
+    } else if (valueMap['_lctype'] == ImMessageType.image) {
+      text = '[图片]';
+    } else if (valueMap['_lctype'] == ImMessageType.audio) {
+      text = '[语音]';
+    } else if (valueMap['_lctype'] == ImMessageType.video) {
+      text = '[视频]';
+    }
     return ImMessage(
       conversationId: valueMap['conversationId'],
       messageId: valueMap['messageId'],
       messageType: valueMap['_lctype'],
-      text: valueMap['_lctext'] ?? '[图片]',
+      text: text,
       attributes: valueMap['_lcattrs'],
     );
   }

@@ -21,6 +21,7 @@
 //视频信息
 @property (nonatomic, strong, readonly ) UIImage              *videoConverPhoto;
 @property (nonatomic, copy, readonly   ) NSString             *videoPath;
+@property (nonatomic, copy, readonly   ) NSString             *videoDuration;
 
 // 语音信息
 @property (nonatomic, copy, readonly   ) NSString             *voicePath;
@@ -67,6 +68,7 @@
  *  @return 返回Message model 对象
  */
 - (instancetype)initWithVideoPath:(NSString *)videoPath
+                    videoDuration:(NSString *)videoDuration
                         timestamp:(NSTimeInterval)timestamp
                         messageId:(NSString *)messageId
                        attributes:(NSDictionary *)attributes;

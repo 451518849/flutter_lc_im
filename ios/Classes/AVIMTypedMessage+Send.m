@@ -17,11 +17,17 @@
             avimTypedMessage = [AVIMTextMessage messageWithText:message.text attributes:message.attributes];
             break;
         }
-        case kAVIMMessageMediaTypeVideo:
+        case kAVIMMessageMediaTypeVideo: {
             avimTypedMessage = [AVIMVideoMessage messageWithText:nil
                                                 attachedFilePath:message.voicePath
                                                       attributes:message.attributes];
+            NSMutableDictionary *metaData = [NSMutableDictionary dictionary];
+            if (message.voiceDuration.length != 0) {
+                [metaData setValue:message.voiceDuration forKey:@"duration"];
+            }
+            [avimTypedMessage.file setMetaData:metaData];
             break;
+        }
         case kAVIMMessageMediaTypeImage: {
             avimTypedMessage = [AVIMImageMessage messageWithText:nil
                                                 attachedFilePath:message.photoPath
