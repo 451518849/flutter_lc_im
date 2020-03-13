@@ -1,6 +1,6 @@
 # flutter_lc_im
 ![](https://img.shields.io/badge/build-passing-brightgreen)
-![](https://img.shields.io/badge/version-1.0.2-orange)
+![](https://img.shields.io/badge/version-1.1.0-orange)
 ![](https://img.shields.io/badge/platform-flutter-lightgrey)
 ![](https://img.shields.io/badge/license-MIT-blue)
 
@@ -26,16 +26,21 @@
 - [x] 给出聊天列表上的未读消息数 
 - [x] 发送图片消息
 - [x] 发送语音消息
+-  [x]   发送视频消息
 - [x] 发送表情
 - [ ] 团组聊天
 - [x] 消息推送
+
 - [ ] ...... 
+
+### Flutter version
+	v1.12.13+hotfix.8
 
 ### Install
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^1.0.2
+		flutter_lc_im: ^1.1.0
 		  
 	flutter packages get
 
@@ -48,12 +53,17 @@ Add this to your package's pubspec.yaml file:
 #### 获取聊天列表
     FlutterLcIm.queryHistoryConversations(_limit, _offset);  
 #### 创建单聊
-    FlutterLcIm.createConversation(currentUser.uid,toUser.uid);
+    FlutterLcIm.createConversation(peerId,limit);
 #### 获取聊天记录
       FlutterLcIm.queryHistoryConversationMessages(）
-#### 发送消息
-       FlutterLcIm.sendMessage();   
-
+#### 发送文字消息
+       FlutterLcIm.sendTextMessage();   
+#### 发送图片消息
+       FlutterLcIm.sendImageMessage(); 
+#### 发送语音消息
+       FlutterLcIm.sendAudioMessage(); 
+#### 发送视频消息
+       FlutterLcIm.sendVideoMessage(); 
 #### 关于推送
 ##### ios推送
 ios端的推送在AppDelegate.m文件中设置，已给参考代码。主要步骤为三步
