@@ -68,7 +68,7 @@ class ImMessage {
         }
       }
     }
-    print(jsonMap);
+    print('content ${contentMap}');
     return ImMessage(
         conversationId: jsonMap['conversationId'],
         messageId: jsonMap['messageId'],

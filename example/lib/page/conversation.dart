@@ -11,6 +11,7 @@ import 'package:flutter_lc_im/flutter_lc_im.dart';
 import 'package:flutter_lc_im_example/view/voice/voice.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 
 const String CONVERSATION_MESSAGE_CHANNEL = "flutter_lc_im/messages";
 
@@ -491,7 +492,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
       _submitImageMsg(image.path);
     } else if (iconName == '视频') {
       var video = await ImagePicker.pickVideo(source: ImageSource.gallery);
-      _submitVideoMsg(video.path);
+      _submitVideoMsg(video);
     } else if (iconName == '拍摄') {
       var image = await ImagePicker.pickImage(source: ImageSource.camera);
       _submitImageMsg(image.path);
@@ -499,7 +500,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
   }
 
   /*
-  * 发送文字消息 
+  * 发送文����消息 
   */
   void _submitMsg(String text) async {
     if (text == null || text == "") {
@@ -559,6 +560,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
         fromUser: widget.currentUser,
         toUser: widget.toUser,
         url: path,
+        messageId: DateTime.now().millisecondsSinceEpoch.toString(),
         duration: duration.ceil(),
         ioType: ImMessageIOType.messageIOTypeOut,
         messageType: ImMessageType.audio);
@@ -575,15 +577,20 @@ class _ImConversationPageState extends State<ImConversationPage> {
   /*
   * 发送视频 
   */
-  void _submitVideoMsg(String path) async {
-    if (path == null) {
+  void _submitVideoMsg(File video) async {
+    if (video == null) {
       return;
     }
+
+    var controller = VideoPlayerController.file(video);
+    await controller.initialize();
+    int seconds = controller.value.duration.inSeconds;
 
     ImMessage message = ImMessage(
         fromUser: widget.currentUser,
         toUser: widget.toUser,
-        url: path,
+        url: video.path,
+        duration: seconds,
         ioType: ImMessageIOType.messageIOTypeOut,
         messageType: ImMessageType.video);
     setState(() {
@@ -593,7 +600,9 @@ class _ImConversationPageState extends State<ImConversationPage> {
     _scrollToBottom();
 
     //发送到服务器
-    FlutterLcIm.sendVideoMessage(path);
+    FlutterLcIm.sendVideoMessage(video.path,duration: seconds.toString());
+
+    controller.dispose();
   }
 
   void _scrollToBottom({double offset = 0, int milliseconds = 100}) {

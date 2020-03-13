@@ -19,11 +19,11 @@
         }
         case kAVIMMessageMediaTypeVideo: {
             avimTypedMessage = [AVIMVideoMessage messageWithText:nil
-                                                attachedFilePath:message.voicePath
+                                                attachedFilePath:message.videoPath
                                                       attributes:message.attributes];
             NSMutableDictionary *metaData = [NSMutableDictionary dictionary];
-            if (message.voiceDuration.length != 0) {
-                [metaData setValue:message.voiceDuration forKey:@"duration"];
+            if (message.videoDuration.length != 0) {
+                [metaData setValue:message.videoDuration forKey:@"duration"];
             }
             [avimTypedMessage.file setMetaData:metaData];
             break;

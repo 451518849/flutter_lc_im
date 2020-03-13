@@ -71,7 +71,7 @@
         _videoDuration = videoDuration;
         _timestamp     = timestamp;
         _messageId     = messageId;
-        _mediaType     = kAVIMMessageMediaTypeAudio;
+        _mediaType     = kAVIMMessageMediaTypeVideo;
         _attributes    = attributes;
     }
     return self;

@@ -22,13 +22,21 @@ class _MessageVideoGalleryViewState extends State<MessageVideoGalleryView> {
       _controller = VideoPlayerController.network(widget.url)
         ..initialize().then((_) {
           setState(() {});
+          _controller.play();
         });
     } else {
       _controller = VideoPlayerController.file(File(widget.url))
         ..initialize().then((_) {
+          _controller.play();
           setState(() {});
         });
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
   }
 
   @override
@@ -36,8 +44,6 @@ class _MessageVideoGalleryViewState extends State<MessageVideoGalleryView> {
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
-          // iconTheme: IconThemeData(color: Colors.white), // 头部图标颜色
-          // centerTitle: true,
           backgroundColor: Colors.black,
         ),
         body: Center(

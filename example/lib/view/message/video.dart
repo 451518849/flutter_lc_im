@@ -6,7 +6,7 @@ import 'package:flutter_lc_im_example/view/avatar.dart';
 import 'package:bubble/bubble.dart';
 import 'package:flutter_lc_im_example/view/gallery/video.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-
+import 'package:path_provider/path_provider.dart';
 import '../message.dart';
 
 class VideoMessage extends StatefulWidget {
@@ -30,6 +30,7 @@ class VideoMessage extends StatefulWidget {
 class _VideoMessageState extends State<VideoMessage> {
   @override
   Widget build(BuildContext context) {
+    _buildVideo(widget.message);
     return _buildVideoMessage(context);
   }
 
@@ -48,18 +49,18 @@ class _VideoMessageState extends State<VideoMessage> {
               onTap: () => _pushToVideoPlayer(widget.message.url, context),
               child: Container(
                 height: 200,
-                width: 200,
+                width: 100,
                 margin: const EdgeInsets.only(bottom: 10, left: 4),
                 child: Bubble(
                   stick: true,
                   nip: BubbleNip.leftBottom,
                   color: Colors.white,
-                  child: Image(
-                    image: widget.message.url.contains("http")
-                        ? NetworkImage(widget.message.url + ImageSize)
-                        : FileImage(File(widget.message.url)),
-                    fit: BoxFit.cover,
-                  ),
+                  child: widget.message.thumbnailUrl == null
+                      ? SizedBox()
+                      : Image(
+                          image: FileImage(File(widget.message.thumbnailUrl)),
+                          fit: BoxFit.cover,
+                        ),
                 ),
               ),
             ),
@@ -76,19 +77,34 @@ class _VideoMessageState extends State<VideoMessage> {
             children: <Widget>[
               Container(
                 height: 200,
-                width: 200,
+                width: 100,
                 margin: const EdgeInsets.only(bottom: 10, right: 4),
                 child: Bubble(
-                  stick: true,
-                  nip: BubbleNip.rightBottom,
-                  color: widget.color,
-                  child: Image(
-                    image: widget.message.url.contains("http")
-                        ? NetworkImage(widget.message.url + ImageSize)
-                        : FileImage(File(widget.message.url)),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                    stick: true,
+                    nip: BubbleNip.rightBottom,
+                    color: widget.color,
+                    child: widget.message.thumbnailUrl == null
+                        ? SizedBox()
+                        : Stack(
+                            fit: StackFit.expand,
+                            children: <Widget>[
+                              Positioned(
+                                child: Image(
+                                  image: FileImage(
+                                      File(widget.message.thumbnailUrl)),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                left: 4,
+                                bottom: 2,
+                                child: Text(
+                                  '00:${widget.message.duration}',
+                                  style: TextStyle(fontSize: 10,color: Colors.white),
+                                ),
+                              )
+                            ],
+                          )),
               ),
               Container(
                 child: ImAvatar(avatarUrl: widget.avatarUrl),
@@ -101,22 +117,18 @@ class _VideoMessageState extends State<VideoMessage> {
   }
 
   void _buildVideo(ImMessage message) async {
-    print('message url:${message.url}');
-    print('message type:${message.messageType}');
-
     final thumbnailPath = await VideoThumbnail.thumbnailFile(
       video: message.url,
+      thumbnailPath: (await getTemporaryDirectory()).path,
       imageFormat: ImageFormat.JPEG,
-      maxWidth: 200,
+      maxWidth: 100,
       quality: 25,
     );
 
-    print('message thumbnailUrl:$thumbnailPath');
-
-    // if (thumbnailPath != null) {
-    //   message.thumbnailUrl = thumbnailPath;
-    //   setState(() {});
-    // }
+    if (message.thumbnailUrl == null && thumbnailPath != null) {
+      message.thumbnailUrl = thumbnailPath;
+      setState(() {});
+    }
   }
 
   void _pushToVideoPlayer(String url, BuildContext context) {

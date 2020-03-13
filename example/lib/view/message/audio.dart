@@ -105,7 +105,7 @@ class _AudioMessageState extends State<AudioMessage> {
   }
 
   void _speakVoice(String messageId, String path) {
-    if (_speakVoiceMessageId == messageId) {
+    if (_speakVoiceMessageId == messageId && _isVoice == true) {
       audioPlayer.stop();
       _isVoice = false;
     } else {
@@ -123,9 +123,13 @@ class _AudioMessageState extends State<AudioMessage> {
 
   void _playVoice(String path) async {
     if (path.contains("http")) {
-      await audioPlayer.play(path);
+      await audioPlayer.play(path).then((_) {
+        _isVoice = false;
+      });
     } else {
-      await audioPlayer.play(path, isLocal: true);
+      await audioPlayer.play(path, isLocal: true).then((_) {
+        _isVoice = false;
+      });
     }
   }
 }
