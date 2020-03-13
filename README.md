@@ -9,14 +9,12 @@
 
 ![](index.jpeg)
 ![](list.jpeg)
-![](chat.jpeg)
+![](chat1.jpeg)
+![](chat2.jpeg)
+![](chat3.jpeg)
 
 ### Important
 全面升级flutter_lc_im,彻底剥离原生界面，让界面定制更容易！在0.2.5版本以前聊天界面还是用的原生代码，使得维护起来非常麻烦，尤其是对UI的修改，更是繁琐。为此，在1.0.0以后的版中去除原生界面的代码，使用flutter编写界面，让用户可以根据自己的业务绘制界面。同时example中已经提供了一套聊天UI，可以直接使用。目前还处于Beta版，还在升级中，如需更多功能请Star支持。
-
-**框架地址：
-[flutter_lc_im 1.0.2](https://pub.dev/packages/flutter_lc_im#-readme-tab-)**
-
 
 ### Support
  
