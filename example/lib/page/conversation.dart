@@ -415,9 +415,10 @@ class _ImConversationPageState extends State<ImConversationPage> {
     _isShowExpaned = false;
     _isShowEmoji = false;
     _isShowVoice = false;
-    if (this._focusNode.hasFocus) {
+    if (_focusNode.hasFocus) {
       FocusScope.of(context).requestFocus(FocusNode());
     }
+
     setState(() {});
   }
 
@@ -428,17 +429,21 @@ class _ImConversationPageState extends State<ImConversationPage> {
     _isShowExpaned = false;
     _isShowEmoji = false;
     _isShowVoice = true;
-    if (this._focusNode.hasFocus) {
-      FocusScope.of(context).requestFocus(FocusNode());
-    }
+
     setState(() {});
+
+    Future.delayed(Duration(milliseconds: 100), () {
+      if (!_focusNode.hasFocus) {
+        FocusScope.of(context).requestFocus(_focusNode);
+      }
+    });
   }
 
   /*
    * 点击 emoji 图标 
    */
   void _openEmojiAction(BuildContext context) {
-    if (this._focusNode.hasFocus) {
+    if (_focusNode.hasFocus) {
       FocusScope.of(context).requestFocus(FocusNode());
 
       //Focus和setState冲突，延迟执行setState
@@ -446,7 +451,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
         setState(() {
           _isShowEmoji = !_isShowEmoji;
           _isShowExpaned = false;
-          _isShowVoice = false;
+          _isShowVoice = true;
           _scrollToBottom();
         });
       });
@@ -454,7 +459,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
       setState(() {
         _isShowEmoji = !_isShowEmoji;
         _isShowExpaned = false;
-        _isShowVoice = false;
+        _isShowVoice = true;
         _scrollToBottom();
       });
     }
@@ -464,7 +469,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
    * 点击 + 图标 
    */
   void _openExpandedAction(BuildContext context) {
-    if (this._focusNode.hasFocus) {
+    if (_focusNode.hasFocus) {
       FocusScope.of(context).requestFocus(FocusNode());
 
       //Focus和setState冲突，延迟执行setState
@@ -500,7 +505,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
   }
 
   /*
-  * 发送文����消息 
+  * 发送文字消息 
   */
   void _submitMsg(String text) async {
     if (text == null || text == "") {
@@ -600,7 +605,7 @@ class _ImConversationPageState extends State<ImConversationPage> {
     _scrollToBottom();
 
     //发送到服务器
-    FlutterLcIm.sendVideoMessage(video.path,duration: seconds.toString());
+    FlutterLcIm.sendVideoMessage(video.path, duration: seconds.toString());
 
     controller.dispose();
   }
