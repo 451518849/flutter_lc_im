@@ -4,6 +4,8 @@
 ![](https://img.shields.io/badge/platform-flutter-lightgrey)
 ![](https://img.shields.io/badge/license-MIT-blue)
 
+## More customizations, less code ！
+
 ### Introduction
 超级简单、轻量的Flutter聊天插件,支持ios和android两个平台。关键是免费！！！强势推荐一波LeanCloud！！! 这可能就是你要找的免费又好用的 flutter im。LeanCloud的使用[传送门](https://leancloud.cn/)。
 
@@ -14,7 +16,7 @@
 ![](chat3.jpeg)
 
 ### Important
-全面升级flutter_lc_im,彻底剥离原生界面，让界面定制更容易！在0.2.5版本以前聊天界面还是用的原生代码，使得维护起来非常麻烦，尤其是对UI的修改，更是繁琐。为此，在1.0.0以后的版中去除原生界面的代码，使用flutter编写界面，让用户可以根据自己的业务绘制界面。同时example中已经提供了一套聊天UI，可以直接使用。目前还处于Beta版，还在升级中，如需更多功能请Star支持。
+全面升级flutter_lc_im,彻底剥离原生界面，让界面定制更容易！在0.2.5版本以前聊天界面还是用的原生代码，使得维护起来非常麻烦，尤其是对UI的修改，更是繁琐。为此，在1.0.0以后的版中去除原生界面的代码，使用flutter编写界面，让用户可以根据自己的业务绘制界面。同时example中已经提供了一套聊天的基础UI，可以直接使用或基于它进行修改。目前还处于Beta版，还在升级中，如需更多功能请Star支持。
 
 ### Support
  
@@ -24,7 +26,7 @@
 - [x] 给出聊天列表上的未读消息数 
 - [x] 发送图片消息
 - [x] 发送语音消息
--  [x]   发送视频消息
+- [x] 发送视频消息
 - [x] 发送表情
 - [ ] 团组聊天
 - [x] 消息推送
@@ -41,6 +43,10 @@ Add this to your package's pubspec.yaml file:
 		flutter_lc_im: ^1.1.0
 		  
 	flutter packages get
+
+### Before Use
+在使用插件之前，你需要到leancloud官网上去注册一个账号，然后获得AppId、AppKey和REST API如下图所示：
+![](register.png)
 
 ### Use：
 
