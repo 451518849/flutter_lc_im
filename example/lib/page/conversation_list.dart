@@ -29,7 +29,7 @@ class _ConversationListState extends State<ImConversationListPage> {
       RefreshController(initialRefresh: false);
 
   int _offset = 0;
-  int _limit = 20; //一次加载20条数据
+  int _limit = 10; //一次加载10条数据,不建议加载太多。
 
   //只有下拉刷新，上拉加载leancloud有些问题
   void _onRefresh() async {

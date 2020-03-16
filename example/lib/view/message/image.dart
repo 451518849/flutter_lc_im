@@ -33,6 +33,7 @@ class _ImageMessageState extends State<ImageMessage> {
       return Container(
         margin: const EdgeInsets.only(left: 10, top: 10),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
               child: ImAvatar(
@@ -45,16 +46,11 @@ class _ImageMessageState extends State<ImageMessage> {
                 height: 200,
                 width: 200,
                 margin: const EdgeInsets.only(bottom: 10, left: 4),
-                child: Bubble(
-                  stick: true,
-                  nip: BubbleNip.leftBottom,
-                  color: Colors.white,
-                  child: Image(
-                    image: widget.message.url.contains("http")
-                        ? NetworkImage(widget.message.url + ImageSize)
-                        : FileImage(File(widget.message.url)),
-                    fit: BoxFit.cover,
-                  ),
+                child: Image(
+                  image: widget.message.url.contains("http")
+                      ? NetworkImage(widget.message.url + ImageSize)
+                      : FileImage(File(widget.message.url)),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -67,22 +63,18 @@ class _ImageMessageState extends State<ImageMessage> {
         child: Container(
           margin: const EdgeInsets.only(right: 10, top: 10),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Container(
                 height: 200,
                 width: 200,
                 margin: const EdgeInsets.only(bottom: 10, right: 4),
-                child: Bubble(
-                  stick: true,
-                  nip: BubbleNip.rightBottom,
-                  color: widget.color,
-                  child: Image(
-                    image: widget.message.url.contains("http")
-                        ? NetworkImage(widget.message.url + ImageSize)
-                        : FileImage(File(widget.message.url)),
-                    fit: BoxFit.cover,
-                  ),
+                child: Image(
+                  image: widget.message.url.contains("http")
+                      ? NetworkImage(widget.message.url + ImageSize)
+                      : FileImage(File(widget.message.url)),
+                  fit: BoxFit.cover,
                 ),
               ),
               Container(

@@ -31,6 +31,7 @@ class _TextMessageState extends State<TextMessage> {
       return Container(
         margin: const EdgeInsets.only(left: 10, top: 10),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
               child: ImAvatar(
@@ -57,13 +58,14 @@ class _TextMessageState extends State<TextMessage> {
         margin: const EdgeInsets.only(right: 10, top: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
               margin: const EdgeInsets.only(bottom: 10, right: 4),
               constraints: BoxConstraints(maxWidth: 250),
               child: Bubble(
                 stick: true,
-                nip: BubbleNip.rightBottom,
+                nip: BubbleNip.rightTop,
                 color: widget.color,
                 child: Text(widget.message.text,
                     textAlign: TextAlign.left,

@@ -33,6 +33,7 @@ class _AudioMessageState extends State<AudioMessage> {
       return Container(
         margin: const EdgeInsets.only(left: 10, top: 10),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
               child: ImAvatar(
@@ -46,7 +47,7 @@ class _AudioMessageState extends State<AudioMessage> {
                 margin: const EdgeInsets.only(bottom: 10, left: 4),
                 child: Bubble(
                   stick: true,
-                  nip: BubbleNip.leftBottom,
+                  nip: BubbleNip.leftTop,
                   color: Colors.white,
                   child: Row(
                     children: <Widget>[
@@ -71,6 +72,7 @@ class _AudioMessageState extends State<AudioMessage> {
         child: Container(
           margin: const EdgeInsets.only(right: 10, top: 10),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Container(
@@ -78,7 +80,7 @@ class _AudioMessageState extends State<AudioMessage> {
                 margin: const EdgeInsets.only(bottom: 10, right: 4),
                 child: Bubble(
                   stick: true,
-                  nip: BubbleNip.rightBottom,
+                  nip: BubbleNip.rightTop,
                   color: widget.color,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,

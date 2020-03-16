@@ -39,6 +39,7 @@ class _VideoMessageState extends State<VideoMessage> {
       return Container(
         margin: const EdgeInsets.only(left: 10, top: 10),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
               child: ImAvatar(
@@ -51,17 +52,12 @@ class _VideoMessageState extends State<VideoMessage> {
                 height: 200,
                 width: 100,
                 margin: const EdgeInsets.only(bottom: 10, left: 4),
-                child: Bubble(
-                  stick: true,
-                  nip: BubbleNip.leftBottom,
-                  color: Colors.white,
-                  child: widget.message.thumbnailUrl == null
-                      ? SizedBox()
-                      : Image(
-                          image: FileImage(File(widget.message.thumbnailUrl)),
-                          fit: BoxFit.cover,
-                        ),
-                ),
+                child: widget.message.thumbnailUrl == null
+                    ? SizedBox()
+                    : Image(
+                        image: FileImage(File(widget.message.thumbnailUrl)),
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
           ],
@@ -74,37 +70,35 @@ class _VideoMessageState extends State<VideoMessage> {
           margin: const EdgeInsets.only(right: 10, top: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
                 height: 200,
                 width: 100,
                 margin: const EdgeInsets.only(bottom: 10, right: 4),
-                child: Bubble(
-                    stick: true,
-                    nip: BubbleNip.rightBottom,
-                    color: widget.color,
-                    child: widget.message.thumbnailUrl == null
-                        ? SizedBox()
-                        : Stack(
-                            fit: StackFit.expand,
-                            children: <Widget>[
-                              Positioned(
-                                child: Image(
-                                  image: FileImage(
-                                      File(widget.message.thumbnailUrl)),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                left: 4,
-                                bottom: 2,
-                                child: Text(
-                                  '00:${widget.message.duration}',
-                                  style: TextStyle(fontSize: 10,color: Colors.white),
-                                ),
-                              )
-                            ],
-                          )),
+                child: widget.message.thumbnailUrl == null
+                    ? SizedBox()
+                    : Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          Positioned(
+                            child: Image(
+                              image: FileImage(
+                                  File(widget.message.thumbnailUrl)),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Positioned(
+                            left: 4,
+                            bottom: 2,
+                            child: Text(
+                              '00:${widget.message.duration}',
+                              style: TextStyle(
+                                  fontSize: 10, color: Colors.white),
+                            ),
+                          )
+                        ],
+                      ),
               ),
               Container(
                 child: ImAvatar(avatarUrl: widget.avatarUrl),
