@@ -51,7 +51,6 @@ class _VoiceWidgetState extends State<VoiceWidget> {
         print("onStop  " + data.path);
         widget.stopRecord(data.path, data.audioTimeLength);
       } else if (data.msg == "onStart") {
-        print("onStart --");
         widget.startRecord();
       }
     });
@@ -81,7 +80,6 @@ class _VoiceWidgetState extends State<VoiceWidget> {
           overlayEntry.markNeedsBuild();
         }
       });
-
     });
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/model/user.dart';
 import 'package:flutter_lc_im_example/utils/date.dart';
+import 'package:flutter_lc_im_example/utils/permission.dart';
 import 'package:flutter_lc_im_example/view/emoji/emoji_picker.dart';
 import 'package:flutter_lc_im_example/view/message.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
@@ -95,6 +96,9 @@ class _ImConversationPageState extends State<ImConversationPage> {
   @override
   void initState() {
     super.initState();
+
+    //检测需要聊天的权限
+    checkConversationPermission();
 
     //监听channel，接收消息
     _setConversationMessageChannel();

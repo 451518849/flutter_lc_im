@@ -31,6 +31,7 @@ dev_dependencies:
   video_thumbnail: ^0.2.0
   video_player: ^0.10.8+1
   path_provider: ^1.6.5
+  permission_handler: '^4.4.0+hotfix.2'
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
