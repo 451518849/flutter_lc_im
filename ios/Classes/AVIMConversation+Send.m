@@ -24,7 +24,7 @@
     }];
 }
 
-- (void)findConversationsWithClient:(AVIMClient *)client limit:(int)limit offset:(int)offset callback:(FlutterEventSink) callback{
++ (void)findConversationsWithClient:(AVIMClient *)client limit:(int)limit offset:(int)offset callback:(FlutterEventSink) callback{
     AVIMConversationQuery *query = [client conversationQuery];
     query.limit       = limit;
     query.skip        = offset;
@@ -35,11 +35,11 @@
     [query findConversationsWithCallback:^(NSArray<AVIMConversation *> * _Nullable conversations,
                                            NSError * _Nullable error) {
         
-        [self convertConversastionsToFlutterConversations:conversations callback:callback];
+        [AVIMConversation convertConversastionsToFlutterConversations:conversations callback:callback];
     }];
 }
 
-- (void)convertConversastionsToFlutterConversations:(NSArray<AVIMConversation *>*) conversations callback:(FlutterEventSink) callback{
++ (void)convertConversastionsToFlutterConversations:(NSArray<AVIMConversation *>*) conversations callback:(FlutterEventSink) callback{
     NSMutableArray *array = [[NSMutableArray alloc] init];
     
     for (AVIMConversation *conversation in conversations) {

@@ -152,10 +152,10 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         int limit  = [call.arguments[@"limit"] intValue];
         int offset = [call.arguments[@"offset"] intValue];
         
-        [self.conversation findConversationsWithClient:self.client
-                                                 limit:limit
-                                                offset:offset
-                                               callback:conversationEventBlock];
+        [AVIMConversation findConversationsWithClient:self.client
+                                                limit:limit
+                                               offset:offset
+                                             callback:conversationEventBlock];
 
     }
     else {
@@ -190,7 +190,7 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     self.client.delegate = self;
     [self.client openWithCallback:^(BOOL succeeded, NSError *error) {
       if(succeeded) {
-          NSLog(@"聊天功能建立成功！");
+          NSLog(@"ccc");
       }
     }];
 }

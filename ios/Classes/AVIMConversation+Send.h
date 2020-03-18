@@ -20,9 +20,9 @@
 - (void)sendMessage:(XFMessage *)message;
 
 /**
-  查询历史消息
+  查询历史聊天记录
  */
-- (void)findConversationsWithClient:(AVIMClient *)client
++ (void)findConversationsWithClient:(AVIMClient *)client
                               limit:(int)limit
                              offset:(int)offset
                            callback:(FlutterEventSink) callback;
