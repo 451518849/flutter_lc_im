@@ -128,7 +128,6 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
           String appKey = call.argument("app_key");
           String api = call.argument("api");
           boolean debug = call.argument("debug");
-
           this.initSetting(appId, appKey, api, debug);
           isRegister = true;
 
@@ -141,6 +140,8 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
       case "login":
 
         String clientId = call.argument("client_id");
+        LCPushService.isOpen = call.argument("notification");
+
         this.login(clientId, result);
         break;
 
@@ -258,7 +259,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
    * */
   private void login(String userId, final Result result) {
 
+    //初始化推送
     setPushSetting(userId);
+
     this.client = AVIMClient.getInstance(userId);
     this.client.open(new AVIMClientCallback() {
       @Override
@@ -276,6 +279,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
    * @param clientId
    */
   private void setPushSetting(String clientId){
+    LCPushService.setDefaultChannelId(context,activity,"default");
     PushService.setDefaultChannelId(context, "default");//这个channel和订阅的channel不一样，只能为default
     PushService.subscribe(context,clientId,activity.getClass()); //订阅频道,这一步必须，否则无法收到推送
     PushService.setDefaultPushCallback(context,activity.getClass());

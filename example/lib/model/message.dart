@@ -64,11 +64,14 @@ class ImMessage {
       url = contentMap['_lcfile']['url'];
       if (contentMap['_lcfile']['metaData'] != null) {
         if (contentMap['_lcfile']['metaData']['duration'] != null) {
-          duration = contentMap['_lcfile']['metaData']['duration'].ceil();
+          print('duration:${contentMap['_lcfile']['metaData']['duration']}');
+          print('duration:${double.parse(contentMap['_lcfile']['metaData']['duration'].toString())}');
+
+          duration = double.parse(contentMap['_lcfile']['metaData']['duration'].toString())
+              .ceil();
         }
       }
     }
-    print('content ${contentMap}');
     return ImMessage(
         conversationId: jsonMap['conversationId'],
         messageId: jsonMap['messageId'],
@@ -77,7 +80,7 @@ class ImMessage {
         text: contentMap['_lctext'],
         url: url,
         duration: duration,
-        timestamp: jsonMap['timestamp']);
+        timestamp: jsonMap['timestamp'] ?? 0);
   }
 
   // 用于convetsation中读取lastMessage

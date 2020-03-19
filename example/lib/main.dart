@@ -17,9 +17,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    FlutterLcIm.register("-gzGzoHsz",
-        "5HdoMlbpm", "https://leancloud.xxx.com",false);
-    FlutterLcIm.login("1");
+    FlutterLcIm.register("x-gzGzoHsz",
+        "xxxx", "https://leancloud.xxx.com",false);
+    FlutterLcIm.login("1",notification: true);
   }
 
   @override

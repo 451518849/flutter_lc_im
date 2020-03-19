@@ -20,9 +20,11 @@ class FlutterLcIm {
 
   /// 登陆聊天
   /// @param clientId 为当前用户的uid
-  static Future<dynamic> login(String clientId) async {
+  /// @param notification 是否显示在通知栏，只对android设备有用
+  static Future<dynamic> login(String clientId,{bool notification = false}) async {
     var result = await _channel.invokeMethod('login', {
       'client_id': clientId,
+      'notification':notification
     });
     return result;
   }
