@@ -89,15 +89,7 @@ public class LCConversation extends AVIMConversation {
                 continue;
             }
 
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String dateString = formatter.format(con.getLastMessageAt());
-            Map<String, Object> dic = new HashMap<>();
-            dic.put("conversationId", con.getConversationId());
-            dic.put("members", con.getMembers());
-            dic.put("clientId", clientId);
-            dic.put("unreadMessagesCount", con.getUnreadMessagesCount());
-            dic.put("lastMessage", con.getLastMessage().getContent());
-            dic.put("lastMessageAt", dateString);
+            Map dic = LCConvertUtils.convertConversationToFlutterModel(con);
             conversations.add(dic);
         }
 
@@ -137,17 +129,7 @@ public class LCConversation extends AVIMConversation {
 
         ArrayList messages = new ArrayList();
         for (AVIMMessage message : mess) {
-            Map<String, Object> dic = new HashMap<>();
-            dic.put("messageId", message.getMessageId());
-            dic.put("clientId", message.getFrom());
-            dic.put("conversationId", message.getConversationId());
-            dic.put("content", message.getContent());
-            dic.put("timestamp", message.getTimestamp());
-            if (clientId.equals(message.getFrom())){
-                dic.put("ioType", AVIMMessage.AVIMMessageIOType.AVIMMessageIOTypeOut.getIOType());
-            }else {
-                dic.put("ioType", AVIMMessage.AVIMMessageIOType.AVIMMessageIOTypeIn.getIOType());
-            }
+           Map dic = LCConvertUtils.convertMessageToFlutterModel(message);
             messages.add(dic);
         }
 

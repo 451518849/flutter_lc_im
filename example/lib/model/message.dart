@@ -64,9 +64,6 @@ class ImMessage {
       url = contentMap['_lcfile']['url'];
       if (contentMap['_lcfile']['metaData'] != null) {
         if (contentMap['_lcfile']['metaData']['duration'] != null) {
-          print('duration:${contentMap['_lcfile']['metaData']['duration']}');
-          print('duration:${double.parse(contentMap['_lcfile']['metaData']['duration'].toString())}');
-
           duration = double.parse(contentMap['_lcfile']['metaData']['duration'].toString())
               .ceil();
         }

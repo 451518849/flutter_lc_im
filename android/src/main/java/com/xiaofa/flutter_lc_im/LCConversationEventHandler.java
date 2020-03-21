@@ -1,8 +1,6 @@
 package com.xiaofa.flutter_lc_im;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +42,6 @@ public class LCConversationEventHandler extends AVIMConversationEventHandler {
      *
      * @param client
      * @param conversation 被邀请的聊天对话
-     * @param operator 邀请你的人
      * @since 3.0
      */
     @Override
@@ -59,27 +56,24 @@ public class LCConversationEventHandler extends AVIMConversationEventHandler {
 //        System.out.println("onUnreadMessagesCountUpdated:"+conversation.getUnreadMessagesCount());
 //        System.out.println("conversationEventCallback:"+conversationEventCallback);
         super.onUnreadMessagesCountUpdated(client, conversation);
+        this.convertConversationToFlutter(conversation);
 
-        if (conversationEventCallback != null){
-            ArrayList conversations = new ArrayList();
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String dateString = formatter.format(conversation.getLastMessageAt());
-            Map<String, Object> dic = new HashMap<>();
-            dic.put("conversationId", conversation.getConversationId());
-            dic.put("members", conversation.getMembers());
-//            dic.put("clientId", conversation.getCreator());
-            dic.put("unreadMessagesCount", conversation.getUnreadMessagesCount());
-            dic.put("lastMessage", conversation.getLastMessage().getContent());
-            dic.put("lastMessageAt", dateString);
-            conversations.add(dic);
-            conversationEventCallback.success(conversations);
-        }
     }
 
     @Override
     public void onMessageUpdated(AVIMClient client, AVIMConversation conversation, AVIMMessage message) {
         super.onMessageUpdated(client, conversation, message);
-        System.out.println("onMessageUpdated:"+conversation.getUnreadMessagesCount());
+//        System.out.println("onMessageUpdated:"+conversation.getUnreadMessagesCount());
 
+    }
+
+    public void convertConversationToFlutter(AVIMConversation conversation){
+        if (conversationEventCallback != null){
+            ArrayList conversations = new ArrayList();
+            Map dic = LCConvertUtils.convertConversationToFlutterModel(conversation);
+            conversations.add(dic);
+
+            conversationEventCallback.success(conversations);
+        }
     }
 }

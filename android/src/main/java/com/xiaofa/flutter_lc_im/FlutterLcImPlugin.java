@@ -261,6 +261,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
     //初始化推送
     setPushSetting(userId);
+    LCConvertUtils.clientId = userId;
 
     this.client = AVIMClient.getInstance(userId);
     this.client.open(new AVIMClientCallback() {
@@ -336,7 +337,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
                   System.out.println("会话创建成功");
                   conversation = new LCConversation(client,con);
                   conversation.read();
-                  conversation.queryHistoryConversationMessages(10,null,0,messageEventCallback);
+                  conversation.queryHistoryConversationMessages(limit,null,0,messageEventCallback);
                 }
               }
             });
@@ -353,6 +354,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
                 if (events != null) {
                   conversationEventCallback = events;
                   conversationEventHandler.conversationEventCallback = events;
+                  messageHandler.conversationEventCallback = events;
                 }
               }
 

@@ -27,5 +27,7 @@
                              offset:(int)offset
                            callback:(FlutterEventSink) callback;
 
++ (void)convertConversastionsToFlutterConversations:(NSArray<AVIMConversation *>*) conversations
+                                           callback:(FlutterEventSink) callback;
 @end
 

@@ -261,6 +261,15 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     }
 }
 
+/**
+  更新未读消息
+ */
+- (void)conversation:(AVIMConversation *)conversation didUpdateForKey:(AVIMConversationUpdatedKey)key{
+    if ([key isEqualToString:AVIMConversationUpdatedKeyUnreadMessagesCount]) {
+        [AVIMConversation convertConversastionsToFlutterConversations:@[conversation] callback:conversationEventBlock];
+    }
+}
+
 
 - (void)imClientClosed:(nonnull AVIMClient *)imClient error:(NSError * _Nullable)error {
     
