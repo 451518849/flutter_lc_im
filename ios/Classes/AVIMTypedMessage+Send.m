@@ -105,7 +105,9 @@
     NSMutableArray *array = [[NSMutableArray alloc] init];
     
     for (AVIMMessage *message in messages) {
-        
+        if(message.content == nil){
+            continue;
+        }
         NSDictionary *dic = @{@"messageId":message.messageId,
                               @"clientId":message.clientId,
                               @"conversationId":message.conversationId,

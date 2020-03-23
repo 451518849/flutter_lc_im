@@ -124,8 +124,6 @@ class _ImConversationPageState extends State<ImConversationPage> {
 
   void _loadData(List<ImMessage> newMessages) {
     setState(() {
-      print('newMessages:$newMessages');
-      print('_messages:$_messages');
       if (newMessages.length == 0) {
         _refreshController.refreshCompleted();
       } else {
