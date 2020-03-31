@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
 import 'package:flutter_lc_im_example/model/user.dart';
 import 'package:flutter_lc_im_example/page/conversation.dart';
-
 import 'page/conversation_list.dart';
 
 void main() => runApp(MaterialApp(home: MyApp()));
@@ -33,7 +32,7 @@ class _MyAppState extends State<MyApp> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             _buildChatViewBtn(),
-            _buildConversationListView(context)
+            _buildConversationListView(context),
           ],
         ),
       ),

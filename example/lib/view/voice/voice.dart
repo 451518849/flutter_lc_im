@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_plugin_record/flutter_plugin_record.dart';
 
+import 'animation.dart';
+import 'loading.dart';
+
 typedef startRecord = Future Function();
 typedef stopRecord = Future Function();
 
@@ -55,32 +58,6 @@ class _VoiceWidgetState extends State<VoiceWidget> {
       }
     });
 
-    ///录制过程监听录制的声音的大小 方便做语音动画显示图片的样式
-    recordPlugin.responseFromAmplitude.listen((data) {
-      var voiceData = double.parse(data.msg);
-      setState(() {
-        if (voiceData > 0 && voiceData < 0.1) {
-          voiceIco = "assets/images/voice_volume_2.png";
-        } else if (voiceData > 0.2 && voiceData < 0.3) {
-          voiceIco = "assets/images/voice_volume_3.png";
-        } else if (voiceData > 0.3 && voiceData < 0.4) {
-          voiceIco = "assets/images/voice_volume_4.png";
-        } else if (voiceData > 0.4 && voiceData < 0.5) {
-          voiceIco = "assets/images/voice_volume_5.png";
-        } else if (voiceData > 0.5 && voiceData < 0.6) {
-          voiceIco = "assets/images/voice_volume_6.png";
-        } else if (voiceData > 0.6 && voiceData < 0.7) {
-          voiceIco = "assets/images/voice_volume_7.png";
-        } else if (voiceData > 0.7 && voiceData < 1) {
-          voiceIco = "assets/images/voice_volume_7.png";
-        } else {
-          voiceIco = "assets/images/voice_volume_1.png";
-        }
-        if (overlayEntry != null) {
-          overlayEntry.markNeedsBuild();
-        }
-      });
-    });
   }
 
   ///显示录音悬浮布局
@@ -88,7 +65,7 @@ class _VoiceWidgetState extends State<VoiceWidget> {
     if (overlayEntry == null) {
       overlayEntry = OverlayEntry(builder: (content) {
         return Positioned(
-          top: MediaQuery.of(context).size.height * 0.5 - 80,
+          top: MediaQuery.of(context).size.height * 0.5,
           left: MediaQuery.of(context).size.width * 0.5 - 80,
           child: Material(
             type: MaterialType.transparency,
@@ -97,7 +74,7 @@ class _VoiceWidgetState extends State<VoiceWidget> {
                 opacity: 0.8,
                 child: Container(
                   width: 160,
-                  height: 160,
+                  height: 80,
                   decoration: BoxDecoration(
                     color: Color(0xff77797A),
                     borderRadius: BorderRadius.all(Radius.circular(20.0)),
@@ -106,14 +83,6 @@ class _VoiceWidgetState extends State<VoiceWidget> {
                     children: <Widget>[
                       Container(
                         margin: EdgeInsets.only(top: 10),
-                        child: Image.asset(
-                          voiceIco,
-                          width: 100,
-                          height: 100,
-                        ),
-                      ),
-                      Container(
-//                      padding: EdgeInsets.only(right: 20, left: 20, top: 0),
                         child: Text(
                           toastShow,
                           style: TextStyle(
@@ -122,7 +91,16 @@ class _VoiceWidgetState extends State<VoiceWidget> {
                             fontSize: 14,
                           ),
                         ),
-                      )
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(top: 10,left: 40),
+                        alignment: Alignment.centerLeft,
+                        child: Loading(
+                          indicator: PulseOutIndicator(),
+                          size: 20.0,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -196,17 +174,6 @@ class _VoiceWidgetState extends State<VoiceWidget> {
   Widget build(BuildContext context) {
     return Container(
       child: GestureDetector(
-        // onVerticalDragStart: (details) {
-        //   starty = details.globalPosition.dy;
-        //   showVoiceView();
-        // },
-        // onVerticalDragEnd: (details) {
-        //   hideVoiceView();
-        // },
-        // onVerticalDragUpdate: (details) {
-        //   offset = details.globalPosition.dy;
-        //   moveVoiceView();
-        // },
         onVerticalDragStart: (details) {
           starty = details.globalPosition.dy;
           showVoiceView();
