@@ -223,7 +223,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
         limit = call.argument("limit");
         int offset = call.argument("offset");
-        this.conversation.queryHistoryConversations(this.client,limit, offset,conversationEventCallback);
+        LCConversation.queryHistoryConversations(this.client,limit, offset,conversationEventCallback);
         break;
 
       case "queryHistoryConversationMessages":

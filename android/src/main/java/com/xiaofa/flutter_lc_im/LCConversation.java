@@ -72,6 +72,7 @@ public class LCConversation extends AVIMConversation {
         query.findInBackground(new AVIMConversationQueryCallback() {
             @Override
             public void done(List<AVIMConversation> convs, AVIMException e) {
+                System.out.println("聊天列表："+convs);
                 if (e == null) {
                     // convs 就是想要的结果
                     sendConversationsToFlutter(convs,client.getClientId(),conversationEventCallback);

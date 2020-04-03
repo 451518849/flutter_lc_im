@@ -17,7 +17,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     FlutterLcIm.register("-gzGzoHsz",
-        "xxx", "https://leancloud.xxx.com",false);
+        "xxx", "https://leancloud.xxxx.com",false);
     FlutterLcIm.login("1",notification: true);
   }
 
@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
       child: Text('跳转去聊天界面'),
       onPressed: () {
         ImUser currentUser = ImUser(
-            uid: '1',
+            uid: '6',
             username: '张三',
             avatarUrl:
                 'http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100');
