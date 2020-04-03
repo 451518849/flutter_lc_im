@@ -1,13 +1,13 @@
 # flutter_lc_im
 ![](https://img.shields.io/badge/build-passing-brightgreen)
-![](https://img.shields.io/badge/version-1.1.2-orange)
+![](https://img.shields.io/badge/version-1.1.3-orange)
 ![](https://img.shields.io/badge/platform-flutter-lightgrey)
 ![](https://img.shields.io/badge/license-MIT-blue)
 
 ## More customizations, less code ！
 
 ### Introduction
-超级简单、轻量的Flutter聊天插件,支持ios和android两个平台。关键是免费！！！强势推荐一波LeanCloud！！! 这可能就是你要找的免费又好用的 flutter im。LeanCloud的使用[传送门](https://leancloud.cn/)。
+超级简单、轻量的Flutter聊天插件,支持ios和android两个平台。强势推荐一波LeanCloud！！! LeanCloud的使用[传送门](https://leancloud.cn/)。
 
 ![](index.jpeg)
 ![](list.jpeg)
@@ -40,7 +40,7 @@
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^1.1.2
+		flutter_lc_im: ^1.1.3
 		  
 	flutter packages get
 
