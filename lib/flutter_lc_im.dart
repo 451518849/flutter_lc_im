@@ -29,6 +29,12 @@ class FlutterLcIm {
     return result;
   }
 
+  /// 退出登陆
+  static Future<dynamic> logout() async {
+    var result = await _channel.invokeMethod('logout');
+    return result;
+  }
+
   /// 创建一个单聊会话
   /// 创建策略：根据client_id和peer_id判断服务器上是存在会话记录，如果存在则返回以前的会话，如果不存则创建新的会话。
   /// @param peer_id 聊天对象的uid
