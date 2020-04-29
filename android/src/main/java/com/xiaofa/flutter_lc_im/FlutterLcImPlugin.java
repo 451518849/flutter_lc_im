@@ -234,6 +234,10 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         this.conversation.queryHistoryConversationMessages(limit,messageId,timestamp,messageEventCallback);
         break;
 
+      case "logout":
+        this.logout();
+        break;
+
       default:
         result.notImplemented();
         break;
@@ -270,6 +274,21 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         if (e == null) {
           // 成功打开连接
           System.out.println("聊天功能建立成功！");
+        }
+      }
+    });
+  }
+
+  /**
+   * 退出登录
+   */
+  private void logout(){
+    this.client.close(new AVIMClientCallback(){
+      @Override
+      public void done(AVIMClient client,AVIMException e){
+        if(e==null){
+          // 登出成功
+          System.out.println("退出登录！");
         }
       }
     });

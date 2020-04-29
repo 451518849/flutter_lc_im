@@ -77,6 +77,10 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         NSString *clientId = call.arguments[@"client_id"];
         [self loginWithClientId:clientId];
         
+    }else if([@"logout" isEqualToString:call.method]){
+
+        [self logout];
+
     }else if([@"createConversation" isEqualToString:call.method]){
 
         NSString *peerId   = call.arguments[@"peer_id"];
@@ -192,6 +196,17 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
       if(succeeded) {
           NSLog(@"ccc");
       }
+    }];
+}
+
+/**
+ 退出登录im
+ */
+- (void)logout{
+    [self.client closeWithCallback:^(BOOL succeeded, NSError * _Nullable error) {
+        if (succeeded) {
+            NSLog(@"退出即时通讯服务");
+        }
     }];
 }
 
