@@ -78,15 +78,15 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
         [self loginWithClientId:clientId];
         
     }else if([@"logout" isEqualToString:call.method]){
-
+        
         [self logout];
-
+        
     }else if([@"createConversation" isEqualToString:call.method]){
 
         NSString *peerId   = call.arguments[@"peer_id"];
         int  limit          = [call.arguments[@"limit"] intValue];
-
-        [self createConversationWithPeerId:peerId limit:limit];
+        
+        [self createConversationWithPeerId:peerId limit:limit attributes:call.arguments[@"attributes"]];
         
     }else if([@"sendTextMessage" isEqualToString:call.method]){
         
@@ -213,12 +213,15 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
 /**
   建立单聊会话
  */
-- (void)createConversationWithPeerId:(NSString *)peerId limit:(int)limit{
+- (void)createConversationWithPeerId:(NSString *)peerId limit:(int)limit attributes:(NSDictionary *)attributes{
     __weak __typeof(self) weakSelf = self;
-    
+    NSMutableDictionary * att = [NSMutableDictionary dictionaryWithObjectsAndKeys:@(LCCKConversationTypeSingle), @"type", nil];
+    if (attributes != nil && [attributes isKindOfClass:[NSDictionary class]]) {
+        [att setValuesForKeysWithDictionary:attributes];
+    }
     [self.client createConversationWithName:[NSString stringWithFormat:@"%@&%@",self.client.clientId,peerId]
                              clientIds:@[peerId]
-                                 attributes:@{@"type":@(LCCKConversationTypeSingle)}
+                                 attributes:att
                                     options:AVIMConversationOptionUnique
                               callback:^(AVIMConversation * _Nullable conversation, NSError * _Nullable error) {
         if (error == nil) {
@@ -231,7 +234,6 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
                                                          messageId:nil
                                                          timestamp:0
                                                           callback:messageEventBlock];
-            
         }
     }];
 }

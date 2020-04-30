@@ -36,7 +36,8 @@ public class LCConvertUtils {
         dic.put("unreadMessagesCount", con.getUnreadMessagesCount());
         dic.put("lastMessage", con.getLastMessage().getContent());
         dic.put("lastMessageAt", dateString);
-
+        if (con.getAttributes()!=null)
+            dic.put("attributes", con.getAttributes());
         return dic;
     }
 }
