@@ -149,8 +149,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
         String peerId = call.argument("peer_id");
         int limit = call.argument("limit");
+        Map map=call.argument("attributes");
 
-        this.createConversation(peerId,limit,call.argument("attributes"));
+        this.createConversation(peerId,limit,map);
         break;
 
       case "sendTextMessage":
