@@ -27,7 +27,7 @@ class ImConversation {
       {this.conversationId,
       this.clientId,
       this.peerId,
-      this.username,
+        this.username,
       this.unreadMessagesCount,
       this.lastMessageAt,
       this.peerAvatarUrl,
@@ -36,7 +36,10 @@ class ImConversation {
 
   factory ImConversation.fromJson(Map<dynamic, dynamic> json) {
     List<dynamic> memebrs = json['members'];
+    Map attributes;
     String peerId = "";
+    String peerName = "";
+    String peerAvatarUrl;
     if (memebrs != null && memebrs.length == 2) {
       if (memebrs[0] == json['clientId']) {
         peerId = memebrs[1];
@@ -44,13 +47,29 @@ class ImConversation {
         peerId = memebrs[0];
       }
     }
+
+    if (json['attributes'] != null) {
+      attributes = json['attributes'];
+      if (attributes['users'] != null) {
+        List users = attributes['users'];
+        users.forEach((user) {
+          String uid = user['uid'];
+          if (uid == peerId) {
+            peerAvatarUrl = user['avatarUrl'];
+            peerName = user['username'];
+          }
+        });
+      }
+    }
+
+
     return ImConversation(
       conversationId: json['conversationId'],
       clientId: json['clientId'],
       username: json['username'],
       peerId: json['peerId'] ?? peerId,
-      peerName: json['peerName'] ?? '测试',
-      peerAvatarUrl: json['peerAvatarUrl'] ??
+      peerName: peerName,
+      peerAvatarUrl: peerAvatarUrl ??
           'http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100',
       unreadMessagesCount: json['unreadMessagesCount'],
       lastMessageAt: tranImTime(json['lastMessageAt']),

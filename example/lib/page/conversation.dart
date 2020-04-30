@@ -103,7 +103,12 @@ class _ImConversationPageState extends State<ImConversationPage> {
     //监听channel，接收消息
     _setConversationMessageChannel();
     //加入到会话中
-    FlutterLcIm.createConversation(widget.toUser.uid);
+    FlutterLcIm.createConversation(widget.toUser.uid, attributes: {
+      'users': [
+        widget.toUser.toJson(),
+        widget.currentUser.toJson(),
+      ]
+    });
     _focusNode.addListener(_focusNodeListener); // 初始化一个listener
   }
 
@@ -132,7 +137,8 @@ class _ImConversationPageState extends State<ImConversationPage> {
             newMessages[0].messageId == _messages[0].messageId) {
           _refreshController.refreshCompleted();
           return;
-        } else if (newMessages.length == 1 && _messages.length != 0 &&
+        } else if (newMessages.length == 1 &&
+            _messages.length != 0 &&
             (newMessages[0].timestamp > _messages[0].timestamp)) {
           //当消息只有一条时，需要判断是接收消息还是刷新的历史消息，接收消息的时间大于历史消息
           _messages.addAll(newMessages);

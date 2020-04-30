@@ -43,20 +43,20 @@
     NSMutableArray *array = [[NSMutableArray alloc] init];
     
     for (AVIMConversation *conversation in conversations) {
-
         if(conversation.lastMessage == nil){
             continue;
         }
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
         NSString *lastMessageAt = [dateFormatter stringFromDate:conversation.lastMessageAt];
-        NSDictionary *dic       = @{@"clientId":conversation.clientId,
-                              @"conversationId":conversation.conversationId,
-                              @"lastMessageAt":lastMessageAt,
-                              @"members":conversation.members,
-                              @"unreadMessagesCount":@(conversation.unreadMessagesCount),
-                              @"lastMessage":conversation.lastMessage.content
-        };
+        NSMutableDictionary * dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                     conversation.clientId, @"clientId",
+                                     conversation.conversationId, @"conversationId",
+                                     lastMessageAt, @"lastMessageAt",
+                                     conversation.members, @"members",
+                                     @(conversation.unreadMessagesCount), @"unreadMessagesCount",
+                                     conversation.lastMessage.content, @"lastMessage", nil];
+        if (conversation.attributes != nil) [dic setObject:conversation.attributes forKey:@"attributes"];
         [array addObject:dic];
     }
     if(callback != nil){

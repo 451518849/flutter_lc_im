@@ -39,11 +39,13 @@ class FlutterLcIm {
   /// 创建策略：根据client_id和peer_id判断服务器上是存在会话记录，如果存在则返回以前的会话，如果不存则创建新的会话。
   /// @param peer_id 聊天对象的uid
   /// @param limit 加载初始化聊天信息的条数，默认10条
+  /// @param attributes 对话的额外属性
   static Future<dynamic> createConversation(String peerId,
-      {int limit = 10}) async {
+      {int limit = 10, Map attributes}) async {
     var result = await _channel.invokeMethod('createConversation', {
       'peer_id': peerId,
       'limit': limit,
+      'attributes': attributes,
     });
     return result;
   }
