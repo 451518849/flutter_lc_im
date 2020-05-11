@@ -103,7 +103,12 @@ class _ImConversationPageState extends State<ImConversationPage> {
     //监听channel，接收消息
     _setConversationMessageChannel();
     //加入到会话中
-    FlutterLcIm.createConversation(widget.toUser.uid);
+    FlutterLcIm.createConversation(widget.toUser.uid, attributes: {
+      'users': [
+        widget.toUser.toJson(),
+        widget.currentUser.toJson(),
+      ]
+    });
     _focusNode.addListener(_focusNodeListener); // 初始化一个listener
   }
 

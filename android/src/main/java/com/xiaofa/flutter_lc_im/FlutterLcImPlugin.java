@@ -149,8 +149,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
         String peerId = call.argument("peer_id");
         int limit = call.argument("limit");
+        Map map=call.argument("attributes");
 
-        this.createConversation(peerId,limit);
+        this.createConversation(peerId,limit,map);
         break;
 
       case "sendTextMessage":
@@ -234,6 +235,10 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         this.conversation.queryHistoryConversationMessages(limit,messageId,timestamp,messageEventCallback);
         break;
 
+      case "logout":
+        this.logout();
+        break;
+
       default:
         result.notImplemented();
         break;
@@ -270,6 +275,21 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         if (e == null) {
           // 成功打开连接
           System.out.println("聊天功能建立成功！");
+        }
+      }
+    });
+  }
+
+  /**
+   * 退出登录
+   */
+  private void logout(){
+    this.client.close(new AVIMClientCallback(){
+      @Override
+      public void done(AVIMClient client,AVIMException e){
+        if(e==null){
+          // 登出成功
+          System.out.println("退出登录！");
         }
       }
     });
@@ -327,8 +347,8 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   }
 
 
-  private void createConversation(String peerId, final int limit) {
-    this.client.createConversation(Arrays.asList(peerId), this.client.getClientId() + "&" + peerId, null, false, true,
+  private void createConversation(String peerId, final int limit, Map<String, Object> attributes) {
+    this.client.createConversation(Arrays.asList(peerId), this.client.getClientId() + "&" + peerId, attributes, false, true,
             new AVIMConversationCreatedCallback() {
               @Override
               public void done(AVIMConversation con, AVIMException e) {
