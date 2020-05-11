@@ -61,16 +61,15 @@ class _TextMessageState extends State<TextMessage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              margin: const EdgeInsets.only(bottom: 10, right: 4),
+              margin: const EdgeInsets.only(bottom: 10, right: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
               constraints: BoxConstraints(maxWidth: 250),
-              child: Bubble(
-                stick: true,
-                nip: BubbleNip.rightTop,
+              decoration: BoxDecoration(
                 color: widget.color,
-                child: Text(widget.message.text,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(fontSize: 16.0)),
+                borderRadius: BorderRadius.all(Radius.circular(6)),
               ),
+              child: Text(widget.message.text,
+                  textAlign: TextAlign.left, style: TextStyle(fontSize: 16.0)),
             ),
             Container(
               child: ImAvatar(avatarUrl: widget.avatarUrl),
