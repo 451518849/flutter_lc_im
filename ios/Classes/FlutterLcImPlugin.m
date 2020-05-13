@@ -13,10 +13,12 @@ NSString *FLUTTER_IM_NAME                         = @"flutter_lc_im";
 NSString *FLUTTER_CHANNEL_MESSAGE                 = @"flutter_lc_im/messages";
 NSString *FLUTTER_CHANNEL_CONVERSATION            = @"flutter_lc_im/conversations";
 NSString *FLUTTER_CHANNEL_NOTIFICATION            = @"flutter_lc_im/notifications";
+NSString *FLUTTER_CHANNEL_CLIENT_STATUS           = @"flutter_lc_im/client/status";
 
 FlutterEventSink conversationEventBlock;
 FlutterEventSink messageEventBlock;
 FlutterEventSink notificationEventBlock;
+FlutterEventSink clientStatusEventBlock;
 
 typedef NS_ENUM(NSUInteger, LCCKConversationType){
     LCCKConversationTypeSingle = 0/**< 单人聊天,不显示nickname */,
@@ -194,6 +196,9 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     self.client.delegate = self;
     [self.client openWithCallback:^(BOOL succeeded, NSError *error) {
       if(succeeded) {
+          if(clientStatusEventBlock != nil){
+              clientStatusEventBlock(@"Login");
+          }
           NSLog(@"ccc");
       }
     }];
@@ -206,6 +211,9 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     [self.client closeWithCallback:^(BOOL succeeded, NSError * _Nullable error) {
         if (succeeded) {
             NSLog(@"退出即时通讯服务");
+            if(clientStatusEventBlock != nil){
+                clientStatusEventBlock(@"Closed");
+            }
         }
     }];
 }
@@ -289,22 +297,30 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
 
 
 - (void)imClientClosed:(nonnull AVIMClient *)imClient error:(NSError * _Nullable)error {
-    
+    if(clientStatusEventBlock != nil){
+        clientStatusEventBlock(@"Closed");
+    }
 }
 
 
 - (void)imClientPaused:(nonnull AVIMClient *)imClient {
-    
+    if(clientStatusEventBlock != nil){
+        clientStatusEventBlock(@"Paused");
+    }
 }
 
 
 - (void)imClientResumed:(nonnull AVIMClient *)imClient {
-    
+    if(clientStatusEventBlock != nil){
+        clientStatusEventBlock(@"Resumed");
+    }
 }
 
 
 - (void)imClientResuming:(nonnull AVIMClient *)imClient {
-    
+    if(clientStatusEventBlock != nil){
+        clientStatusEventBlock(@"Resuming");
+    }
 }
 
 
@@ -315,6 +331,7 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     [self setConversationEventToFlutter];
     [self setNotificationEventToFlutter];
     [self setMessageEventToFlutter];
+    [self setClientStatusEventToFlutter];
 
 }
 - (void)setConversationEventToFlutter {
@@ -341,6 +358,15 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     
 }
 
+- (void)setClientStatusEventToFlutter {
+    
+    FlutterEventChannel *evenChannal = [FlutterEventChannel eventChannelWithName:FLUTTER_CHANNEL_CLIENT_STATUS
+                                                                 binaryMessenger:messager];
+    [evenChannal setStreamHandler:self];
+    
+}
+
+
 - (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
                                        eventSink:(FlutterEventSink)events{
     NSLog(@"listen channel:%@",arguments);
@@ -356,6 +382,11 @@ typedef NS_ENUM(NSUInteger, LCCKConversationType){
     }else if ([arguments isEqual:FLUTTER_CHANNEL_MESSAGE]){
         if (events) {
             messageEventBlock      = events;
+        }
+        
+    }else if ([arguments isEqual:FLUTTER_CHANNEL_CLIENT_STATUS]){
+        if (events) {
+            clientStatusEventBlock = events;
         }
         
     }

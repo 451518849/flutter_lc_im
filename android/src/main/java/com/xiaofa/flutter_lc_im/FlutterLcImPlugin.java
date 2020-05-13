@@ -13,7 +13,6 @@ import cn.leancloud.AVInstallation;
 import cn.leancloud.AVLogger;
 import cn.leancloud.AVOSCloud;
 import cn.leancloud.AVObject;
-import cn.leancloud.AVQuery;
 import cn.leancloud.im.AVIMOptions;
 import cn.leancloud.im.v2.AVIMClient;
 import cn.leancloud.im.v2.AVIMConversation;
@@ -36,13 +35,16 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-/** FlutterLcImPlugin */
+/**
+ * FlutterLcImPlugin
+ */
 public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler {
 
   public static final String FLUTTER_IM_NAME = "flutter_lc_im";
   public static final String FLUTTER_CHANNEL_MESSAGE = "flutter_lc_im/messages";
   public static final String FLUTTER_CHANNEL_CONVERSATION = "flutter_lc_im/conversations";
   public static final String FLUTTER_CHANNEL_NOTIFICATION = "flutter_lc_im/notifications";
+  public static final String FLUTTER_CHANNEL_CLIENT_STATUS = "flutter_lc_im/client/status";
 
   static boolean isRegister = false;
 
@@ -59,17 +61,20 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   private LCConversationEventHandler conversationEventHandler;
   private LCMessageHandler messageHandler;
 
+  public static EventChannel.EventSink clientStatusEventCallback;
+
   //留给客户端做数据交互
   public static EventChannel.EventSink notificationEventCallback;
 
   public FlutterLcImPlugin() {
+    AVIMClient.setClientEventHandler(LCClientEventHandler.getInstance());
   }
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     context = flutterPluginBinding.getApplicationContext();
     messenger = flutterPluginBinding.getBinaryMessenger();
-    final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), FLUTTER_IM_NAME);
+    final MethodChannel channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), FLUTTER_IM_NAME);
     channel.setMethodCallHandler(new FlutterLcImPlugin());
   }
 
@@ -138,10 +143,8 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         }
         break;
       case "login":
-
         String clientId = call.argument("client_id");
         LCPushService.isOpen = call.argument("notification");
-
         this.login(clientId, result);
         break;
 
@@ -149,9 +152,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
         String peerId = call.argument("peer_id");
         int limit = call.argument("limit");
-        Map map=call.argument("attributes");
+        Map map = call.argument("attributes");
 
-        this.createConversation(peerId,limit,map);
+        this.createConversation(peerId, limit, map);
         break;
 
       case "sendTextMessage":
@@ -224,7 +227,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
         limit = call.argument("limit");
         int offset = call.argument("offset");
-        LCConversation.queryHistoryConversations(this.client,limit, offset,conversationEventCallback);
+        LCConversation.queryHistoryConversations(this.client, limit, offset, conversationEventCallback);
         break;
 
       case "queryHistoryConversationMessages":
@@ -232,7 +235,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         limit = call.argument("limit");
         String messageId = call.argument("message_id");
         long timestamp = call.argument("timestamp");
-        this.conversation.queryHistoryConversationMessages(limit,messageId,timestamp,messageEventCallback);
+        this.conversation.queryHistoryConversationMessages(limit, messageId, timestamp, messageEventCallback);
         break;
 
       case "logout":
@@ -248,9 +251,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   /*
    *  开启聊天
    * */
-  private void initSetting(String appId, String appKey, String api,boolean debug) {
+  private void initSetting(String appId, String appKey, String api, boolean debug) {
 
-    if (debug){
+    if (debug) {
       AVOSCloud.setLogLevel(AVLogger.Level.DEBUG);
     }
     AVOSCloud.initialize(context, appId, appKey, api);
@@ -275,6 +278,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
         if (e == null) {
           // 成功打开连接
           System.out.println("聊天功能建立成功！");
+          if (clientStatusEventCallback != null) {
+            clientStatusEventCallback.success("Login");
+          }
         }
       }
     });
@@ -283,13 +289,16 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
   /**
    * 退出登录
    */
-  private void logout(){
-    this.client.close(new AVIMClientCallback(){
+  private void logout() {
+    this.client.close(new AVIMClientCallback() {
       @Override
-      public void done(AVIMClient client,AVIMException e){
-        if(e==null){
+      public void done(AVIMClient client, AVIMException e) {
+        if (e == null) {
           // 登出成功
           System.out.println("退出登录！");
+          if (clientStatusEventCallback != null) {
+            clientStatusEventCallback.success("Closed");
+          }
         }
       }
     });
@@ -297,38 +306,43 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
 
   /**
    * 初始化推送，订阅clientId所在的频道
+   *
    * @param clientId
    */
-  private void setPushSetting(String clientId){
-    LCPushService.setDefaultChannelId(context,activity,"default");
+  private void setPushSetting(String clientId) {
+    LCPushService.setDefaultChannelId(context, activity, "default");
     PushService.setDefaultChannelId(context, "default");//这个channel和订阅的channel不一样，只能为default
-    PushService.subscribe(context,clientId,activity.getClass()); //订阅频道,这一步必须，否则无法收到推送
-    PushService.setDefaultPushCallback(context,activity.getClass());
+    PushService.subscribe(context, clientId, activity.getClass()); //订阅频道,这一步必须，否则无法收到推送
+    PushService.setDefaultPushCallback(context, activity.getClass());
 
     AVInstallation.getCurrentInstallation().saveInBackground().subscribe(new Observer<AVObject>() {
       @Override
       public void onSubscribe(Disposable d) {
       }
+
       @Override
       public void onNext(AVObject avObject) {
         // 关联 installationId 到用户表等操作。
         String installationId = AVInstallation.getCurrentInstallation().getInstallationId();
-        System.out.println("保存成功：" + installationId );
+        System.out.println("保存成功：" + installationId);
       }
+
       @Override
       public void onError(Throwable e) {
         System.out.println("保存失败，错误信息：" + e.getMessage());
       }
+
       @Override
       public void onComplete() {
       }
     });
   }
+
   /*
    * 接收会话handler
    * 接收消息handle
    */
-  private void setConversationEventHandler(){
+  private void setConversationEventHandler() {
     conversationEventHandler = new LCConversationEventHandler();
     messageHandler = new LCMessageHandler();
     AVIMMessageManager.setConversationEventHandler(conversationEventHandler);
@@ -344,6 +358,7 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
     setConversationMessageEventToFlutter();
     setConversationEventToFlutter();
     setNotificationEventToFlutter();
+    setClientStatusEventToFlutter();
   }
 
 
@@ -355,9 +370,9 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
                 if (e == null) {
                   // 创建成功
                   System.out.println("会话创建成功");
-                  conversation = new LCConversation(client,con);
+                  conversation = new LCConversation(client, con);
                   conversation.read();
-                  conversation.queryHistoryConversationMessages(limit,null,0,messageEventCallback);
+                  conversation.queryHistoryConversationMessages(limit, null, 0, messageEventCallback);
                 }
               }
             });
@@ -430,4 +445,24 @@ public class FlutterLcImPlugin implements FlutterPlugin, ActivityAware, MethodCa
     );
   }
 
+  void setClientStatusEventToFlutter() {
+
+    new EventChannel(messenger, FLUTTER_CHANNEL_CLIENT_STATUS).setStreamHandler(
+            new EventChannel.StreamHandler() {
+              @Override
+              // 这个onListen是Flutter端开始监听这个channel时的回调，第二个参数 EventSink是用来传数据的载体。
+              public void onListen(Object arguments, EventChannel.EventSink events) {
+                if (events != null) {
+                  clientStatusEventCallback = events;
+                }
+              }
+
+              @Override
+              public void onCancel(Object arguments) {
+                // 对面不再接收
+
+              }
+            }
+    );
+  }
 }

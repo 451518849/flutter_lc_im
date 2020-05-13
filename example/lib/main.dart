@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_lc_im/flutter_lc_im.dart';
 import 'package:flutter_lc_im_example/model/user.dart';
 import 'package:flutter_lc_im_example/page/conversation.dart';
@@ -6,12 +7,28 @@ import 'page/conversation_list.dart';
 
 void main() => runApp(MaterialApp(home: MyApp()));
 
+const String FLUTTER_CHANNEL_CLIENT_STATUS = "flutter_lc_im/client/status";
+
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
+  static const _clientStatusEventChannel = EventChannel(FLUTTER_CHANNEL_CLIENT_STATUS);
+
+  //监听channel，接收会话列表
+  void _setClientStatusChannel() {
+    print('开始监听IM状态');
+    _clientStatusEventChannel
+        .receiveBroadcastStream(FLUTTER_CHANNEL_CLIENT_STATUS)
+        .listen((Object status) {
+      print('IM 状态更变: $status');
+    }).onError((Object o) {
+      print('IM 状态监听错误: ${o.toString()}');
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -19,6 +36,7 @@ class _MyAppState extends State<MyApp> {
     FlutterLcIm.register("-gzGzoHsz",
         "xxx", "https://leancloud.xxxx.com",false);
     FlutterLcIm.login("1",notification: true);
+    _setClientStatusChannel();
   }
 
   @override
