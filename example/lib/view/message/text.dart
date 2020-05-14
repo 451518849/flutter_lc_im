@@ -39,16 +39,15 @@ class _TextMessageState extends State<TextMessage> {
               ),
             ),
             Container(
-              margin: const EdgeInsets.only(bottom: 10, left: 4),
+              margin: const EdgeInsets.only(bottom: 10, left: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
               constraints: BoxConstraints(maxWidth: 250),
-              child: Bubble(
-                stick: true,
-                nip: BubbleNip.leftBottom,
+              decoration: BoxDecoration(
                 color: Colors.white,
-                child: Text(widget.message.text,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(fontSize: 16.0)),
+                borderRadius: BorderRadius.all(Radius.circular(6)),
               ),
+              child: Text(widget.message.text,
+                  textAlign: TextAlign.left, style: TextStyle(fontSize: 16.0)),
             ),
           ],
         ),
