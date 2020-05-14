@@ -16,9 +16,9 @@ A new flutter plugin project.
   s.resource     = 'Assets/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'AVOSCloud', '12.1.2'
-  s.dependency 'AVOSCloudIM', '12.1.2'
-  s.dependency 'AVOSCloudLiveQuery', '12.1.2'
+  s.dependency 'AVOSCloud', '12.1.3'
+  s.dependency 'AVOSCloudIM', '12.1.3'
+  s.dependency 'AVOSCloudLiveQuery', '12.1.3'
 
   s.ios.deployment_target = '8.0'
 end
