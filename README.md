@@ -1,6 +1,6 @@
 # flutter_lc_im
 ![](https://img.shields.io/badge/build-passing-brightgreen)
-![](https://img.shields.io/badge/version-1.1.3-orange)
+![](https://img.shields.io/badge/version-1.1.4-orange)
 ![](https://img.shields.io/badge/platform-flutter-lightgrey)
 ![](https://img.shields.io/badge/license-MIT-blue)
 
@@ -40,7 +40,7 @@
 Add this to your package's pubspec.yaml file:
 
 	dependencies:
-		flutter_lc_im: ^1.1.3
+		flutter_lc_im: ^1.1.4
 		  
 	flutter packages get
 
@@ -54,6 +54,8 @@ Add this to your package's pubspec.yaml file:
     FlutterLcIm.register("appId","appKey", "api",debug);
 #### 登陆
     FlutterLcIm.login("clientId");
+#### 登出
+    FlutterLcIm.logout();
 #### 获取聊天列表
     FlutterLcIm.queryHistoryConversations(_limit, _offset);  
 #### 创建单聊
