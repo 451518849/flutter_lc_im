@@ -50,12 +50,15 @@ dependencies {
 //        exclude group: 'org.ligboy.retrofit2', module: 'converter-fastjson'
 //    }
     //即时通信与推送需要的包
-    implementation ('cn.leancloud:realtime-android:6.4.2'){
-        exclude group: 'com.alibaba', module: 'fastjson'
-        exclude group: 'org.ligboy.retrofit2', module: 'converter-fastjson'
-    }
+//    implementation ('cn.leancloud:realtime-android:6.4.2'){
+//        exclude group: 'com.alibaba', module: 'fastjson'
+//        exclude group: 'org.ligboy.retrofit2', module: 'converter-fastjson'
+//    }
+//    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+//    implementation 'com.alibaba:fastjson:1.1.71.android'
+//    implementation "org.ligboy.retrofit2:converter-fastjson-android:2.1.0"
+
+    implementation 'cn.leancloud:realtime-android:6.5.3'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'com.alibaba:fastjson:1.1.71.android'
-    implementation "org.ligboy.retrofit2:converter-fastjson-android:2.1.0"
 }
 

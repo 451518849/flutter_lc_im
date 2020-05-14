@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
       child: Text('跳转去聊天界面'),
       onPressed: () {
         ImUser currentUser = ImUser(
-            uid: '6',
+            uid: '1',
             username: '张三',
             avatarUrl:
                 'http://thirdqq.qlogo.cn/g?b=oidb&k=h22EA0NsicnjEqG4OEcqKyg&s=100');
