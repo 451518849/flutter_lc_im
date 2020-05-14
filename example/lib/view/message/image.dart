@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/view/avatar.dart';
-import 'package:bubble/bubble.dart';
 import 'package:flutter_lc_im_example/view/gallery/photo.dart';
 
 import '../message.dart';

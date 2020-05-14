@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_lc_im_example/model/message.dart';
 import 'package:flutter_lc_im_example/view/avatar.dart';
-import 'package:bubble/bubble.dart';
-
 import '../message.dart';
 
 class AudioMessage extends StatefulWidget {
@@ -44,22 +42,24 @@ class _AudioMessageState extends State<AudioMessage> {
               onTap: () =>
                   _speakVoice(widget.message.messageId, widget.message.url),
               child: Container(
-                margin: const EdgeInsets.only(bottom: 10, left: 4),
-                child: Bubble(
-                  stick: true,
-                  nip: BubbleNip.leftTop,
+                margin: const EdgeInsets.only(bottom: 10, right: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                constraints: BoxConstraints(maxWidth: 250),
+                decoration: BoxDecoration(
                   color: Colors.white,
-                  child: Row(
-                    children: <Widget>[
-                      Image.asset(
-                        'assets/images/speak_left.png',
-                        width: 20,
-                        height: 20,
-                      ),
-                      Container(
-                          child: Text(''' ${widget.message.duration}'' ''')),
-                    ],
-                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(6)),
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Image.asset(
+                      'assets/images/speak_left.png',
+                      width: 20,
+                      height: 20,
+                    ),
+                    Container(
+                        child: Text(''' ${widget.message.duration}'' ''')),
+                  ],
                 ),
               ),
             ),
@@ -77,23 +77,25 @@ class _AudioMessageState extends State<AudioMessage> {
             children: <Widget>[
               Container(
                 width: 80.0 + widget.message.duration,
-                margin: const EdgeInsets.only(bottom: 10, right: 4),
-                child: Bubble(
-                  stick: true,
-                  nip: BubbleNip.rightTop,
+                margin: const EdgeInsets.only(bottom: 10, right: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                constraints: BoxConstraints(maxWidth: 250),
+                decoration: BoxDecoration(
                   color: widget.color,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      Container(
-                          child: Text(''' ${widget.message.duration}'' ''')),
-                      Image.asset(
-                        'assets/images/speak_right.png',
-                        width: 20,
-                        height: 20,
-                      ),
-                    ],
-                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(6)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Container(
+                        child: Text(''' ${widget.message.duration}'' ''')),
+                    Image.asset(
+                      'assets/images/speak_right.png',
+                      width: 20,
+                      height: 20,
+                    ),
+                  ],
                 ),
               ),
               Container(
